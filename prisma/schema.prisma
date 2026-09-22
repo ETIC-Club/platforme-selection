@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              Int                 @id @default(autoincrement())
+  googleId        String              @unique @map("google_id")
+  email           String              @unique
+  fullName        String?             @map("full_name")
+  isSuperAdmin    Boolean             @default(false) @map("is_super_admin")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  lastLoginAt     DateTime?           @map("last_login_at")
+  assignedBy      Assignment[]        @relation("AssignmentAssignedBy")
+  modifiedHistory EvaluationHistory[]
+  addedSelectors  EventSelector[]     @relation("EventSelectorAddedBy")
+  eventSelectors  EventSelector[]     @relation("EventSelectorUser")
+  createdEvents   Event[]             @relation("EventCreatedBy")
+  exports         Export[]
+  logs            Log[]
+
+  @@map("users")
+}
+
+model Event {
+  id                  Int                    @id @default(autoincrement())
+  name                String
+  description         String?
+  quotaParticipants   Int?                   @map("quota_participants")
+  googleSheetUrl      String?                @map("google_sheet_url")
+  csvOriginalFilename String?                @map("csv_original_filename")
+  csvColumns          Json?                  @map("csv_columns")
+  nbEvalRh            Int                    @default(0) @map("nb_eval_rh")
+  nbEvalTechnique     Int                    @default(0) @map("nb_eval_technique")
+  status              EventStatus            @default(en_cours)
+  createdBy           Int?                   @map("created_by")
+  createdAt           DateTime               @default(now()) @map("created_at")
+  closedAt            DateTime?              @map("closed_at")
+  candidates          Candidate[]
+  fieldVisibility     EventFieldVisibility[]
+  selectors           EventSelector[]
+  creator             User?                  @relation("EventCreatedBy", fields: [createdBy], references: [id])
+  exports             Export[]
+
+  @@map("events")
+}
+
+model EventFieldVisibility {
+  id           Int          @id @default(autoincrement())
+  eventId      Int          @map("event_id")
+  selectorType SelectorType @map("selector_type")
+  fieldName    String       @map("field_name")
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, selectorType, fieldName])
+  @@map("event_field_visibility")
+}
+
+model Candidate {
+  id           Int             @id @default(autoincrement())
+  eventId      Int             @map("event_id")
+  csvRowNumber Int             @map("csv_row_number")
+  nom          String?
+  prenom       String?
+  email        String?
+  telephone    String?
+  extraData    Json?           @map("extra_data")
+  finalStatus  CandidateStatus @default(en_attente) @map("final_status")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  assignments  Assignment[]
+  event        Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, csvRowNumber])
+  @@map("candidates")
+}
+
+model EventSelector {
+  id           Int          @id @default(autoincrement())
+  eventId      Int          @map("event_id")
+  userId       Int          @map("user_id")
+  selectorType SelectorType @map("selector_type")
+  isActive     Boolean      @default(true) @map("is_active")
+  addedBy      Int?         @map("added_by")
+  addedAt      DateTime     @default(now()) @map("added_at")
+  assignments  Assignment[]
+  addedByUser  User?        @relation("EventSelectorAddedBy", fields: [addedBy], references: [id])
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user         User         @relation("EventSelectorUser", fields: [userId], references: [id])
+
+  @@unique([eventId, userId, selectorType])
+  @@map("event_selectors")
+}
+
+model Assignment {
+  id              Int           @id @default(autoincrement())
+  candidateId     Int           @map("candidate_id")
+  eventSelectorId Int           @map("event_selector_id")
+  assignedBy      Int?          @map("assigned_by")
+  assignedAt      DateTime      @default(now()) @map("assigned_at")
+  assignedByUser  User?         @relation("AssignmentAssignedBy", fields: [assignedBy], references: [id])
+  candidate       Candidate     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  eventSelector   EventSelector @relation(fields: [eventSelectorId], references: [id], onDelete: Cascade)
+  evaluation      Evaluation?
+
+  @@unique([candidateId, eventSelectorId])
+  @@map("assignments")
+}
+
+model Evaluation {
+  id           Int                 @id @default(autoincrement())
+  assignmentId Int                 @unique @map("assignment_id")
+  decision     Decision?
+  comment      String?
+  evaluatedAt  DateTime?           @map("evaluated_at")
+  updatedAt    DateTime?           @map("updated_at")
+  history      EvaluationHistory[]
+  assignment   Assignment          @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  @@map("evaluations")
+}
+
+model EvaluationHistory {
+  id               Int        @id @default(autoincrement())
+  evaluationId     Int        @map("evaluation_id")
+  previousDecision String?    @map("previous_decision")
+  newDecision      String?    @map("new_decision")
+  previousComment  String?    @map("previous_comment")
+  newComment       String?    @map("new_comment")
+  modifiedBy       Int?       @map("modified_by")
+  modifiedAt       DateTime   @default(now()) @map("modified_at")
+  evaluation       Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+  modifier         User?      @relation(fields: [modifiedBy], references: [id])
+
+  @@map("evaluation_history")
+}
+
+model Log {
+  id         Int      @id @default(autoincrement())
+  userId     Int?     @map("user_id")
+  action     String
+  entityType String?  @map("entity_type")
+  entityId   Int?     @map("entity_id")
+  details    Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@map("logs")
+}
+
+model Export {
+  id                   Int      @id @default(autoincrement())
+  eventId              Int      @map("event_id")
+  exportedBy           Int?     @map("exported_by")
+  sheetTabName         String?  @map("sheet_tab_name")
+  nbCandidatesExported Int?     @map("nb_candidates_exported")
+  exportedAt           DateTime @default(now()) @map("exported_at")
+  event                Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  exporter             User?    @relation(fields: [exportedBy], references: [id])
+
+  @@map("exports")
+}
+
+enum SelectorType {
+  RH
+  Technique
+}
+
+enum EventStatus {
+  en_cours
+  termine
+}
+
+enum CandidateStatus {
+  en_attente
+  accepte
+  refuse
+}
+
+enum Decision {
+  accepter
+  rejeter
+  en_attente
+}
