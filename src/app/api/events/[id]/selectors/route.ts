@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCandidatesByEvent } from "@/services/candidateService";
+import { getSelectorsForEvent } from "@/services/dataService";
 
 export async function GET(
   request: NextRequest,
@@ -12,7 +12,7 @@ export async function GET(
       return NextResponse.json({ error: "Invalid event ID" }, { status: 400 });
     }
 
-    const candidates = await getCandidatesByEvent(eventId);
+    const selectors = await getSelectorsForEvent(eventId);
     
     let eventName = `Event #${eventId}`;
     try {
@@ -28,7 +28,7 @@ export async function GET(
       // ignore
     }
 
-    return NextResponse.json({ candidates, eventName });
+    return NextResponse.json({ selectors, eventName });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal Server Error";
     return NextResponse.json({ error: message }, { status: 500 });

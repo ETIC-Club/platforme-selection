@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { SearchIcon, BellIcon } from "./Icons";
 import styles from "./dashboard.module.css";
 
@@ -8,7 +9,7 @@ export type RolePreview = "SUPER_ADMIN" | "SELECTOR_RH" | "SELECTOR_TECHNIQUE" |
 
 interface TopBarProps {
   currentRole: RolePreview;
-  onRoleChange: (role: RolePreview) => void;
+  onRoleChange?: (role: RolePreview) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   userName?: string;
@@ -17,11 +18,10 @@ interface TopBarProps {
 
 export function TopBar({
   currentRole,
-  onRoleChange,
   searchQuery,
   onSearchChange,
-  userName = "ETIC BENETIC",
-  userEmail = "etic@esi.dz",
+  userName = "Admin ETIC",
+  userEmail = "admin@etic-club.net",
 }: TopBarProps) {
   const getInitials = (name: string) => {
     return name
@@ -35,13 +35,13 @@ export function TopBar({
   const getRoleDisplayName = (role: RolePreview) => {
     switch (role) {
       case "SUPER_ADMIN":
-        return "Super Admin";
+        return "Admin";
       case "SELECTOR_RH":
-        return "Selector RH";
+        return "Sélecteur RH";
       case "SELECTOR_TECHNIQUE":
-        return "Selector Technique";
+        return "Sélecteur Dev";
       case "STANDARD_USER":
-        return "Member";
+        return "Membre";
     }
   };
 
@@ -59,21 +59,6 @@ export function TopBar({
       </div>
 
       <div className={styles.topbarActions}>
-        <div className={styles.roleSelector}>
-          <span>View as:</span>
-          <select
-            value={currentRole}
-            onChange={(e) => onRoleChange(e.target.value as RolePreview)}
-            className={styles.roleSelectDropdown}
-            aria-label="Role preview switch"
-          >
-            <option value="SUPER_ADMIN">Super Admin (Can see LOGS)</option>
-            <option value="SELECTOR_RH">Selector RH</option>
-            <option value="SELECTOR_TECHNIQUE">Selector Technique</option>
-            <option value="STANDARD_USER">Standard User</option>
-          </select>
-        </div>
-
         <button
           type="button"
           aria-label="Notifications"
@@ -82,15 +67,17 @@ export function TopBar({
           <BellIcon />
         </button>
 
-        <div className={styles.profileSection}>
+        <Link href="/login" className={styles.profileSection} title="Cliquer pour changer de rôle">
           <div className={styles.avatar}>
             {getInitials(userName)}
           </div>
           <div className={styles.profileMeta}>
             <span className={styles.profileName}>{userName}</span>
-            <span className={styles.profileRoleBadge}>{userEmail} • {getRoleDisplayName(currentRole)}</span>
+            <span className={styles.profileRoleBadge}>
+              {userEmail} • {getRoleDisplayName(currentRole)}
+            </span>
           </div>
-        </div>
+        </Link>
       </div>
     </header>
   );

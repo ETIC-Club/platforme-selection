@@ -15,6 +15,7 @@ import {
 } from "./Icons";
 import styles from "./dashboard.module.css";
 import { ASSETS } from "@/lib/theme";
+import { useAuth } from "@/context/AuthContext";
 
 export interface EventContext {
   id: number;
@@ -43,14 +44,14 @@ export function Sidebar({ isSuperAdmin, eventContext }: SidebarProps) {
       href: "/users",
       icon: UsersIcon,
       active: pathname === "/users",
-      rolesAllowed: "all" as const,
+      rolesAllowed: "admin_only" as const,
     },
     {
       name: "HISTORY",
       href: "/history",
       icon: HistoryIcon,
       active: pathname === "/history",
-      rolesAllowed: "all" as const,
+      rolesAllowed: "admin_only" as const,
     },
     {
       name: "LOGS",
@@ -88,6 +89,8 @@ export function Sidebar({ isSuperAdmin, eventContext }: SidebarProps) {
   ];
 
   const currentNavItems = eventContext ? eventNavItems : globalNavItems;
+
+  const { logout } = useAuth();
 
   return (
     <aside className={styles.sidebar}>
@@ -151,10 +154,23 @@ export function Sidebar({ isSuperAdmin, eventContext }: SidebarProps) {
         <div className={styles.extraHeader}>EXTRA</div>
         <ul className={styles.navList}>
           <li>
-            <Link href="/api/auth/signout" className={styles.navItem}>
+            <button
+              type="button"
+              onClick={logout}
+              className={styles.navItem}
+              style={{
+                width: "100%",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                textAlign: "left",
+                fontFamily: "inherit",
+                fontSize: "inherit",
+              }}
+            >
               <LogoutIcon />
               <span>LOGOUT</span>
-            </Link>
+            </button>
           </li>
         </ul>
       </div>

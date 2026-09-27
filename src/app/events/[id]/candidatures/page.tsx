@@ -22,6 +22,7 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>("all");
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateDetail | null>(null);
+  const [eventName, setEventName] = useState<string>(`Event #${eventId}`);
 
   useEffect(() => {
     let isMounted = true;
@@ -31,8 +32,9 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
         const res = await fetch(`/api/events/${eventId}/candidates`);
         if (res.ok) {
           const data = await res.json();
-          if (isMounted && data.candidates) {
-            setCandidates(data.candidates);
+          if (isMounted) {
+            if (data.candidates) setCandidates(data.candidates);
+            if (data.eventName) setEventName(data.eventName);
           }
         }
       } catch (err) {
@@ -102,7 +104,7 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
   const rejectedCount = candidates.filter((c) => c.finalStatus === "refuse").length;
 
   return (
-    <DashboardLayout eventContext={{ id: eventId, name: `Event #${eventId}` }}>
+    <DashboardLayout eventContext={{ id: eventId, name: eventName }}>
       {({ searchQuery, role }) => {
         const currentSelectorType = role === "SELECTOR_RH" ? "RH" : "Technique";
         const currentSelectorName =
