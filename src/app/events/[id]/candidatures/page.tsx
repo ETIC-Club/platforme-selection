@@ -6,6 +6,7 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { CandidateStoriesModal } from "@/components/CandidateStoriesModal";
 import { ArrowLeftIcon } from "@/components/Icons";
 import { CandidateDetail } from "@/services/candidateService";
+import { useAuth } from "@/context/AuthContext";
 import styles from "@/components/dashboard.module.css";
 
 interface CandidaturesPageProps {
@@ -17,6 +18,8 @@ type FilterType = "all" | "to_review" | "accepte" | "refuse";
 export default function CandidaturesPage({ params }: CandidaturesPageProps) {
   const resolvedParams = use(params);
   const eventId = parseInt(resolvedParams.id, 10) || 1;
+  const { user } = useAuth();
+  const isAdmin = user?.role === "SUPER_ADMIN";
 
   const [candidates, setCandidates] = useState<CandidateDetail[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +28,11 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
   const [eventName, setEventName] = useState<string>(`Event #${eventId}`);
 
   useEffect(() => {
+    if (isAdmin) {
+      setLoading(false);
+      return;
+    }
+
     let isMounted = true;
     async function loadCandidates() {
       try {
@@ -106,6 +114,10 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
   return (
     <DashboardLayout eventContext={{ id: eventId, name: eventName }}>
       {({ searchQuery, role }) => {
+        if (role === "SUPER_ADMIN" || isAdmin) {
+          return <div className={styles.mainCard} />;
+        }
+
         const currentSelectorType = role === "SELECTOR_RH" ? "RH" : "Technique";
         const currentSelectorName =
           role === "SUPER_ADMIN"
