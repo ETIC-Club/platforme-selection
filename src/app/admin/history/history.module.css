@@ -1,0 +1,1310 @@
+@font-face {
+  font-family: "Gotham";
+  src: url("/fonts/Gotham-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gotham";
+  src: url("/fonts/Gotham-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gotham";
+  src: url("/fonts/Gotham-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.page {
+  width: 100vw;
+  min-height: 100vh;
+
+  background: #ffffff;
+  color: #111111;
+
+  font-family: "Gotham", sans-serif;
+}
+
+.dashboard {
+  width: 100%;
+  min-height: 100vh;
+
+  display: flex;
+  gap: 18px;
+
+  padding: 30px 30px 35px 27px;
+}
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.sidebar {
+  width: 270px;
+  min-width: 270px;
+  min-height: calc(100vh - 65px);
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 27px 25px;
+
+  background: #f7f7f7;
+  border-radius: 15px;
+}
+
+.logoArea {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  margin-bottom: 69px;
+}
+
+.logoMark {
+  width: 35px;
+  height: 35px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+
+  color: #ffffff;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.logoText {
+  color: #101010;
+
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.menuSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionTitle {
+  margin-bottom: 19px;
+
+  color: #222222;
+
+  font-size: 8px;
+  font-weight: 400;
+}
+
+.navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navigation a,
+.logout {
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 0 13px;
+
+  border-radius: 8px;
+
+  color: #a2a2a2;
+
+  text-decoration: none;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.navigation a:hover,
+.logout:hover {
+  background: #eeeeee;
+}
+
+.navigation .activeLink {
+  background: #ffffff;
+  color: #111111;
+}
+
+.navigation .activeLink::before {
+  content: "";
+
+  width: 4px;
+  height: 40px;
+
+  position: absolute;
+  left: 0;
+
+  border-radius: 0 6px 6px 0;
+
+  background: linear-gradient(
+    180deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+}
+
+.navigation .activeLink {
+  position: relative;
+}
+
+.icon {
+  width: 20px;
+
+  display: inline-flex;
+  justify-content: center;
+
+  color: inherit;
+
+  font-size: 15px;
+}
+
+.extraSection {
+  margin-top: auto;
+}
+
+.logout {
+  padding-left: 0;
+}
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.content {
+  flex: 1;
+  min-width: 0;
+
+  background: #ffffff;
+}
+
+/* =========================================================
+   TOPBAR
+========================================================= */
+
+.topbar {
+  height: 81px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 27px 0 19px;
+
+  background: #f7f7f7;
+  border-radius: 15px;
+}
+
+.search {
+  width: min(678px, 65%);
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 13px;
+
+  padding: 0 17px;
+
+  border: 1px solid #eeeeee;
+  border-radius: 22px;
+
+  background: #ffffff;
+}
+
+.searchIcon {
+  color: #111111;
+
+  font-size: 25px;
+  line-height: 1;
+}
+
+.search input {
+  width: 100%;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #333333;
+
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.search input::placeholder {
+  color: #a6aaa9;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+
+  gap: 18px;
+}
+
+.notification {
+  width: 43px;
+  height: 43px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #eeeeee;
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  color: #111111;
+
+  font-size: 18px;
+
+  cursor: pointer;
+}
+
+.profileInfo {
+  min-width: 252px;
+  height: 50px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 0 15px;
+
+  border: 1px solid #eeeeee;
+  border-radius: 10px;
+
+  background: #ffffff;
+}
+
+.profileAvatar {
+  width: 31px;
+  height: 31px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profileInfo strong,
+.profileInfo span {
+  display: block;
+}
+
+.profileInfo strong {
+  color: #111111;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.profileInfo span {
+  margin-top: 3px;
+
+  color: #8d8d8d;
+
+  font-size: 8px;
+}
+
+/* =========================================================
+   MAIN PANEL
+========================================================= */
+
+.mainContent {
+  position: relative;
+
+  min-height: calc(100vh - 161px);
+
+  margin-top: 23px;
+
+  padding: 20px 30px 27px;
+
+  background: #f7f7f7;
+
+  border-radius: 15px;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pageHeader h1 {
+  margin: 0;
+
+  color: #050505;
+
+  font-size: 24px;
+  font-weight: 700;
+
+  letter-spacing: -1px;
+}
+
+/* =========================================================
+   DATE FILTER BUTTON
+========================================================= */
+
+.filterWrapper {
+  position: relative;
+  z-index: 200;
+}
+
+.dateFilterButton {
+  width: 160px;
+  height: 43px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 16px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+
+  color: #ffffff;
+
+  font-family: "Gotham", sans-serif;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.dateFilterButton:hover {
+  filter: brightness(0.97);
+}
+
+.filterArrow {
+  font-size: 12px;
+}
+
+/* =========================================================
+   FLOATING FILTER PANEL
+========================================================= */
+
+.filterPanel {
+  position: absolute;
+
+  top: 57px;
+  right: 0;
+
+  z-index: 999;
+
+  width: 375px;
+  height: 380px;
+
+  box-sizing: border-box;
+
+  padding: 0 16px 17px;
+
+  background: #ffffff;
+
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+
+  animation: filterAppear 180ms ease-out;
+}
+
+@keyframes filterAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-7px);
+    filter: blur(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* =========================================================
+   FILTER HEADER
+========================================================= */
+
+.filterHeader {
+  height: 62px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border-bottom: 1px solid #dedede;
+}
+
+.filterHeader h2 {
+  margin: 0;
+
+  color: #002f10;
+
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.filterClose {
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: #707070;
+  color: #ffffff;
+
+  font-family: "Gotham", sans-serif;
+
+  font-size: 17px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   DATE OPTIONS
+========================================================= */
+
+.dateOptions {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 5px;
+
+  margin-top: 20px;
+
+  white-space: nowrap;
+}
+
+.dateOption,
+.dateOptionActive {
+  height: 29px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  padding: 0 8px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #dedede;
+  border-radius: 9px;
+
+  background: #f6f6f6;
+
+  color: #002f10;
+
+  font-family: "Gotham", sans-serif;
+
+  font-size: 10px;
+  font-weight: 500;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+.dateOption:nth-child(1),
+.dateOptionActive:nth-child(1) {
+  min-width: 58px;
+}
+
+.dateOption:nth-child(2),
+.dateOptionActive:nth-child(2) {
+  min-width: 67px;
+}
+
+.dateOption:nth-child(3),
+.dateOptionActive:nth-child(3) {
+  min-width: 67px;
+}
+
+.dateOption:nth-child(4),
+.dateOptionActive:nth-child(4) {
+  min-width: 58px;
+}
+
+.dateOption:nth-child(5),
+.dateOptionActive:nth-child(5) {
+  min-width: 77px;
+}
+
+.dateOption span,
+.dateOptionActive span {
+  width: 12px;
+  height: 12px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #d9d9d9;
+
+  color: #ffffff;
+
+  font-size: 7px;
+}
+
+.dateOptionActive {
+  border-color: transparent;
+
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+
+  color: #ffffff;
+}
+
+.dateOptionActive span {
+  background: #ffffff;
+  color: #02a9a2;
+}
+
+/* =========================================================
+   MONTH
+========================================================= */
+
+.monthContent {
+  margin-top: 29px;
+}
+
+.monthList {
+  display: flex;
+  flex-direction: column;
+
+  align-items: flex-end;
+
+  gap: 18px;
+
+  padding-right: 11px;
+}
+
+.dayContent,
+.weekContent {
+  margin-top: 24px;
+}
+
+.filterLabel {
+  margin: 0 0 14px;
+
+  color: #555555;
+
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.dayGrid {
+  display: grid;
+
+  grid-template-columns: repeat(7, 1fr);
+
+  gap: 5px;
+}
+
+.dayGrid button {
+  width: 34px;
+  height: 34px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #111111;
+
+  font-family: "Gotham", sans-serif;
+  font-size: 11px;
+
+  cursor: pointer;
+}
+
+.dayGrid button:hover,
+.dayGrid .dayActive {
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+
+  color: #ffffff;
+}
+
+.weekList {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.weekList button {
+  width: 100%;
+  height: 38px;
+
+  border: 1px solid #dedede;
+  border-radius: 8px;
+
+  background: #f7f7f7;
+
+  color: #222222;
+
+  font-family: "Gotham", sans-serif;
+  font-size: 11px;
+
+  cursor: pointer;
+}
+
+.weekList button:hover,
+.weekList .weekActive {
+  border-color: transparent;
+
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+
+  color: #ffffff;
+}
+
+.monthList button {
+  padding: 4px 8px;
+
+  border-radius: 7px;
+}
+
+.monthList button:hover,
+.monthList .monthActive {
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+
+  color: #ffffff;
+}
+
+.customContent {
+  display: flex;
+  flex-direction: column;
+
+  gap: 15px;
+
+  margin-top: 25px;
+}
+
+.customContent label {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+
+  color: #555555;
+
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.customContent input {
+  width: 100%;
+  height: 39px;
+
+  box-sizing: border-box;
+
+  padding: 0 10px;
+
+  border: 1px solid #dedede;
+  border-radius: 8px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #222222;
+
+  font-family: "Gotham", sans-serif;
+  font-size: 11px;
+}
+
+.customContent input:focus {
+  border-color: #02a9a2;
+}
+
+.monthList button {
+  border: 0;
+
+  background: transparent;
+
+  color: #111111;
+
+  font-family: "Gotham", sans-serif;
+
+  font-size: 14px;
+  font-weight: 400;
+
+  cursor: pointer;
+}
+
+/* =========================================================
+   YEARS
+========================================================= */
+
+.yearGrid {
+  display: grid;
+
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 0 18px;
+
+  margin-top: 27px;
+}
+
+.yearGrid button {
+  height: 39px;
+
+  border: 0;
+  border-radius: 10px;
+
+  background: transparent;
+
+  color: #111111;
+
+  font-family: "Gotham", sans-serif;
+
+  font-size: 14px;
+
+  cursor: pointer;
+}
+
+.yearGrid button:hover,
+.yearGrid .yearActive {
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+
+  color: #ffffff;
+}
+
+.yearGrid .yearActive {
+  color: #ffca00;
+}
+
+/* =========================================================
+   APPLY BUTTON
+========================================================= */
+
+.applyButton {
+  width: calc(100% - 14px);
+  height: 60px;
+
+  margin: 31px 7px 0;
+
+  border: 0;
+
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+
+  color: #ffffff;
+
+  font-family: "Gotham", sans-serif;
+
+  font-size: 18px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.applyButton:hover {
+  filter: brightness(0.97);
+}
+
+/* =========================================================
+   CATEGORY FILTERS
+========================================================= */
+
+.categoryFilters {
+  display: flex;
+
+  gap: 10px;
+
+  margin-top: 24px;
+  margin-bottom: 18px;
+}
+
+.categoryButton,
+.categoryActive {
+  min-width: 113px;
+  height: 40px;
+
+  padding: 0 20px;
+
+  border: 1px solid #413b89;
+  border-radius: 20px;
+
+  background: #ffffff;
+
+  color: #111111;
+
+  font-family: "Gotham", sans-serif;
+
+  font-size: 11px;
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+.categoryButton:hover,
+.categoryActive {
+  background: #ffffff;
+}
+
+/* =========================================================
+   EVENT CARDS
+========================================================= */
+
+.eventsList {
+  display: flex;
+  flex-direction: column;
+
+  gap: 17px;
+}
+
+.eventCard {
+  width: 100%;
+  height: 113px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 10px 14px 10px 27px;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border-radius: 14px;
+}
+
+.eventImage {
+  width: 80px;
+  height: 80px;
+
+  flex-shrink: 0;
+
+  border-radius: 10px;
+
+  background: #d9d9d9;
+}
+
+.eventInfo {
+  min-width: 0;
+
+  margin-left: 22px;
+
+  flex: 1;
+}
+
+.eventInfo h2 {
+  max-width: 390px;
+
+  margin: 0;
+
+  color: #080808;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  line-height: 1.02;
+  letter-spacing: -0.7px;
+}
+
+.eventInfo p {
+  margin: 5px 0 0;
+
+  color: #555555;
+
+  font-size: 9px;
+  line-height: 1.1;
+}
+
+.eventInfo span {
+  display: block;
+
+  margin-top: 6px;
+
+  color: #222222;
+
+  font-size: 9px;
+}
+
+/* =========================================================
+   SATISFACTION
+========================================================= */
+
+.satisfaction {
+  width: 265px;
+
+  flex-shrink: 0;
+
+  margin-right: 25px;
+}
+
+.satisfaction > span {
+  display: block;
+
+  margin-bottom: 13px;
+
+  color: #777777;
+
+  font-size: 9px;
+
+  text-align: center;
+}
+
+.progress {
+  width: 100%;
+  height: 10px;
+
+  overflow: hidden;
+
+  border-radius: 5px;
+
+  background: #eeeeee;
+}
+
+.progress div {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+}
+
+/* =========================================================
+   ACTION
+========================================================= */
+
+.eventAction {
+  width: 35px;
+  height: 35px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+
+  color: #ffffff;
+
+  font-size: 9px;
+
+  cursor: pointer;
+}
+
+.eventAction:hover {
+  filter: brightness(0.97);
+}
+
+/* =========================================================
+   PAGINATION
+========================================================= */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-top: 46px;
+
+  padding: 0 65px;
+}
+
+.pageSize,
+.pageNavigation {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  color: #555555;
+
+  font-size: 10px;
+}
+
+.pageSizeNumber,
+.currentPage {
+  min-width: 35px;
+  height: 23px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 4px;
+
+  background: #dedede;
+
+  color: #555555;
+}
+
+.pageNavigation button {
+  width: 30px;
+  height: 30px;
+
+  margin-left: 8px;
+
+  border: 1px solid #dedede;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  color: #555555;
+
+  font-size: 17px;
+
+  cursor: pointer;
+}
+
+.pageNavigation button + button {
+  margin-left: 2px;
+}
+
+.pageNavigation button:hover {
+  border-color: #02a9a2;
+
+  color: #02a9a2;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1200px) {
+  .sidebar {
+    width: 230px;
+    min-width: 230px;
+  }
+
+  .profileInfo {
+    min-width: 190px;
+  }
+
+  .satisfaction {
+    width: 180px;
+  }
+
+  .eventInfo h2 {
+    font-size: 19px;
+  }
+}
+
+@media (max-width: 950px) {
+  .dashboard {
+    padding: 20px;
+  }
+
+  .sidebar {
+    width: 210px;
+    min-width: 210px;
+  }
+
+  .profileInfo {
+    min-width: 160px;
+  }
+
+  .search {
+    width: 55%;
+  }
+
+  .satisfaction {
+    width: 140px;
+  }
+
+  .eventInfo h2 {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 800px) {
+  .dashboard {
+    padding: 15px;
+  }
+
+  .sidebar {
+    width: 190px;
+    min-width: 190px;
+  }
+
+  .profileInfo {
+    display: none;
+  }
+
+  .search {
+    width: 65%;
+  }
+
+  .eventInfo {
+    margin-left: 20px;
+  }
+
+  .satisfaction {
+    width: 110px;
+  }
+
+  .filterPanel {
+    width: 375px;
+    right: -5px;
+  }
+}
+
+@media (max-width: 650px) {
+  .dashboard {
+    display: block;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 0;
+    min-height: auto;
+
+    margin-bottom: 15px;
+  }
+
+  .logoArea {
+    margin-bottom: 20px;
+  }
+
+  .extraSection {
+    display: none;
+  }
+
+  .topbar {
+    margin-bottom: 15px;
+  }
+
+  .mainContent {
+    padding: 27px 30px 24px;
+  }
+
+  .pageHeader h1 {
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .dateFilterButton {
+    width: 150px;
+  }
+
+  .filterPanel {
+    width: 375px;
+    max-width: calc(100vw - 30px);
+    right: -5px;
+  }
+
+  .eventCard {
+    height: auto;
+    min-height: 110px;
+  }
+
+  .eventImage {
+    width: 60px;
+    height: 60px;
+  }
+
+  .eventInfo h2 {
+    font-size: 15px;
+  }
+
+  .satisfaction {
+    display: none;
+  }
+
+  .pagination {
+    padding: 0;
+  }
+}
