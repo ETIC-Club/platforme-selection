@@ -1,13 +1,30 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --color-primary-teal: #02A9A2;
+  --color-primary-red: #C1333F;
+  --color-primary-yellow: #FFCA00;
+  --color-primary-orange: #EC9E00;
+  --color-primary-green: #1AAF5D;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-secondary-black: #272421;
+  --color-secondary-beige: #FFFCF7;
+
+  --color-add-mint: #00DABF;
+  --color-add-coral: #F6415C;
+  --color-light-gold: #E7BE6B;
+  --color-snow: #FFFAFA;
+  --color-white: #FFFFFF;
+
+  --gradient-1: linear-gradient(135deg, #C1333F 0%, #EC9E00 100%);
+  --gradient-2: linear-gradient(135deg, #E7BE6B 0%, #EC9E00 100%);
+  --gradient-3: linear-gradient(135deg, #FFFAFA 0%, #FFCA00 100%);
+  --gradient-4: linear-gradient(135deg, #02A9A2 0%, #00DABF 100%);
+  --gradient-5: linear-gradient(135deg, #02A9A2 0%, #1AAF5D 100%);
+
+  --font-primary: 'Gotham', system-ui, -apple-system, sans-serif;
+  --font-secondary: 'Humming', cursive, sans-serif;
+
+  --background: var(--color-secondary-beige);
+  --foreground: var(--color-secondary-black);
 }
 
 html {
@@ -17,18 +34,35 @@ html {
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden;
+  height: 100vh;
+  overflow: hidden;
 }
 
 body {
-  min-height: 100%;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle slim scrollbar for inner scroll containers */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(2, 169, 162, 0.4);
 }
 
 * {
@@ -42,8 +76,66 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* Background utilities strictly enforcing allowed backgrounds */
+.bg-red {
+  background-color: var(--color-primary-red);
+}
+
+.bg-g1 {
+  background: var(--gradient-1);
+}
+
+.bg-g2 {
+  background: var(--gradient-2);
+}
+
+.bg-g5 {
+  background: var(--gradient-5);
+}
+
+.bg-beige {
+  background-color: var(--color-secondary-beige);
+}
+
+/* Text and Gradient text utilities */
+.text-white {
+  color: var(--color-white);
+}
+
+.text-black {
+  color: var(--color-secondary-black);
+}
+
+.text-red {
+  color: var(--color-primary-red);
+}
+
+.text-orange {
+  color: var(--color-primary-orange);
+}
+
+.text-gradient-g1 {
+  background: var(--gradient-1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-g3 {
+  background: var(--gradient-3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-g5 {
+  background: var(--gradient-5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.font-primary {
+  font-family: var(--font-primary);
+}
+
+.font-secondary {
+  font-family: var(--font-secondary);
 }
