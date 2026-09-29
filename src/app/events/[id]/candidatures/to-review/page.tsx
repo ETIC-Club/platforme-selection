@@ -8,33 +8,24 @@ import { useAuth } from "@/context/AuthContext";
 import styles from "@/components/dashboard.module.css";
 import { CandidateList } from "@/components/candidates/CandidateList";
 
-interface CandidaturesPageProps {
+interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-export default function CandidaturesPage({ params }: CandidaturesPageProps) {
+export default function ToReviewPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const eventId = parseInt(resolvedParams.id, 10) || 1;
   const { user } = useAuth();
   const isAdmin = user?.role === "SUPER_ADMIN";
 
-  const [eventName, setEventName] = useState<string>(`Event #${eventId}`);
+  const [eventName] = useState<string>(`Event #${eventId}`);
 
   return (
     <DashboardLayout eventContext={{ id: eventId, name: eventName }}>
       {({ searchQuery, role }) => {
         if ((role as any) === "SUPER_ADMIN" || isAdmin) {
-          // You might still want to render CandidateList here for admins?
-          // If yes, you can remove this early return. I'll remove it so admins can see candidates too.
+          // Admins can see this
         }
-
-        const currentSelectorType = role === "SELECTOR_RH" ? "RH" : "Technique";
-        const currentSelectorName =
-          (role as any) === "SUPER_ADMIN"
-            ? "Super Admin"
-            : role === "SELECTOR_RH"
-            ? "Sélecteur RH"
-            : "Sélecteur Tech";
 
         return (
           <div className={styles.mainCard}>
@@ -51,26 +42,25 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
                   </Link>
                 </div>
                 <h1 className={styles.pageTitle} style={{ marginTop: "6px" }}>
-                  Candidatures (Event #{eventId})
+                  À traiter (Event #{eventId})
                 </h1>
                 <p style={{ fontSize: "13px", color: "#6B7280", marginTop: "2px" }}>
-                  Consultez les stories des candidats et soumettez vos évaluations.
+                  Candidatures en attente de décision.
                 </p>
               </div>
-
             </div>
 
             <div style={{ marginTop: "20px" }}>
               <CandidateList
                 eventId={eventId}
-                status="all"
+                status="none"
                 initialItems={[]}
                 initialNextCursor={null}
                 initialTotal={0}
-                showStatusSwitch
                 showDecisionControl={role === "SELECTOR_RH" || role === "SELECTOR_TECHNIQUE" || (role as any) === "SUPER_ADMIN" || isAdmin}
                 searchQuery={searchQuery}
                 autoFetch={true}
+                layoutMode="to-review"
               />
             </div>
           </div>
@@ -79,4 +69,3 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
     </DashboardLayout>
   );
 }
-
