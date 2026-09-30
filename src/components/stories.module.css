@@ -1,0 +1,531 @@
+.storiesOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: rgba(15, 18, 20, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.storiesContainer {
+  position: relative;
+  width: 440px;
+  height: 720px;
+  min-width: 440px;
+  max-width: 440px;
+  min-height: 720px;
+  max-height: 720px;
+  flex-shrink: 0;
+  background: #1B1E22;
+  border-radius: 22px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #FFFFFF;
+  box-sizing: border-box;
+}
+
+
+/* Story Progress Bars */
+.progressSegments {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  gap: 5px;
+  z-index: 20;
+}
+
+.progressBarTrack {
+  flex: 1;
+  height: 3px;
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressBarFilled {
+  height: 100%;
+  background-color: #FFFFFF;
+  transition: width 0.25s linear;
+}
+
+/* Story Header */
+.storyHeader {
+  position: absolute;
+  top: 26px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 20;
+}
+
+.candidateMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.candidateAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--gradient-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  border: 1.5px solid #FFFFFF;
+}
+
+.candidateName {
+  font-family: var(--font-primary);
+  font-weight: 700;
+  font-size: 14px;
+  color: #FFFFFF;
+}
+
+.stepBadge {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.closeButton {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #FFFFFF;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.closeButton:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.storiesStage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 440px;
+  height: 720px;
+  flex-shrink: 0;
+}
+
+/* Nav Tap Zones */
+.tapZoneLeft,
+.tapZoneRight {
+  position: absolute;
+  top: 65px;
+  height: 100px;
+  width: 40%;
+  z-index: 8;
+  cursor: pointer;
+}
+
+.tapZoneLeft {
+  left: 0;
+}
+
+.tapZoneRight {
+  right: 0;
+}
+
+/* Floating Navigation Arrows */
+.navArrowLeft,
+.navArrowRight {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 40;
+  transition: all 0.2s ease;
+  font-size: 18px;
+}
+
+.navArrowLeft {
+  left: -64px;
+}
+
+.navArrowRight {
+  right: -64px;
+}
+
+.navArrowLeft:hover:not(:disabled),
+.navArrowRight:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.navArrowLeft:disabled,
+.navArrowRight:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Story Content Body */
+.storyBody {
+  margin-top: 76px;
+  padding: 16px 20px 20px 20px;
+  flex: 1;
+  height: calc(720px - 76px);
+  min-height: calc(720px - 76px);
+  max-height: calc(720px - 76px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 15;
+  box-sizing: border-box;
+}
+
+.storyStepWindow {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+
+
+.storyTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+}
+
+.storyTitle {
+  font-family: var(--font-primary);
+  font-weight: 700;
+  font-size: 20px;
+  color: #FFFFFF;
+}
+
+.storyCategoryTag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--gradient-5);
+  color: #FFFFFF;
+  text-transform: uppercase;
+}
+
+/* Info Cards */
+.storyCard {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cardLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cardValue {
+  font-size: 14px;
+  color: #FFFFFF;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* Skills Badges */
+.skillsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.skillBadge {
+  background: rgba(2, 169, 162, 0.18);
+  border: 1px solid rgba(2, 169, 162, 0.4);
+  color: #00DABF;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+/* Projects Showcase */
+.projectItem {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-left: 3px solid var(--color-primary-teal);
+}
+
+.projectTitle {
+  font-family: var(--font-primary);
+  font-weight: 700;
+  font-size: 15px;
+  color: #FFFFFF;
+}
+
+.projectDesc {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
+}
+
+/* Responses / Evaluation Screen */
+.decisionButtonGroup {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.decisionBtn {
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  padding: 10px 8px;
+  font-family: var(--font-primary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #FFFFFF;
+}
+
+.decisionBtnAccepter {
+  border-color: rgba(26, 175, 93, 0.4);
+}
+.decisionBtnAccepterActive {
+  background-color: #1AAF5D;
+  border-color: #1AAF5D;
+  color: #FFFFFF;
+}
+
+.decisionBtnAttente {
+  border-color: rgba(236, 158, 0, 0.4);
+}
+.decisionBtnAttenteActive {
+  background-color: #EC9E00;
+  border-color: #EC9E00;
+  color: #FFFFFF;
+}
+
+.decisionBtnRejeter {
+  border-color: rgba(193, 51, 63, 0.4);
+}
+.decisionBtnRejeterActive {
+  background-color: #C1333F;
+  border-color: #C1333F;
+  color: #FFFFFF;
+}
+
+.commentTextarea {
+  width: 100%;
+  min-height: 85px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+  padding: 10px 12px;
+  font-family: var(--font-primary);
+  font-size: 13px;
+  outline: none;
+  resize: vertical;
+}
+
+.commentTextarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.submitDecisionBtn {
+  background: var(--gradient-5);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-family: var(--font-primary);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  margin-top: 4px;
+}
+
+.submitDecisionBtn:hover {
+  opacity: 0.9;
+}
+
+.evalHistoryItem {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  border-left: 3px solid #00DABF;
+}
+
+.evalMetaHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+}
+
+.evalTimestamp {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.readOnlyNoticeCard {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.readOnlyBadge {
+  background: rgba(236, 158, 0, 0.15);
+  color: #EC9E00;
+  border: 1px solid rgba(236, 158, 0, 0.4);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.readOnlyDesc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+.adminTrackToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.trackToggleGroup {
+  display: flex;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 3px;
+  border-radius: 8px;
+}
+
+.trackBtn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.trackBtnActive {
+  background: #00DABF;
+  color: #032326;
+}
+
+@media (max-height: 750px) {
+  .storiesStage {
+    width: 420px;
+    height: 620px;
+  }
+  .storiesContainer {
+    width: 420px;
+    height: 620px;
+    min-width: 420px;
+    max-width: 420px;
+    min-height: 620px;
+    max-height: 620px;
+  }
+  .storyBody {
+    height: calc(620px - 76px);
+    min-height: calc(620px - 76px);
+    max-height: calc(620px - 76px);
+  }
+}
+
+@media (max-width: 520px) {
+  .storiesStage {
+    width: calc(100vw - 32px);
+    height: min(680px, calc(100vh - 40px));
+  }
+  .storiesContainer {
+    width: 100%;
+    height: 100%;
+    min-width: unset;
+    max-width: unset;
+    min-height: unset;
+    max-height: unset;
+  }
+  .storyBody {
+    height: calc(100% - 76px);
+    min-height: calc(100% - 76px);
+    max-height: calc(100% - 76px);
+  }
+}
+

@@ -1,0 +1,89 @@
+================================================================================
+                    GUIDE D'EXÉCUTION DU SEEDING PRISMA
+================================================================================
+
+Le fichier de seeding se trouve dans : prisma/seed.ts
+
+Ce script effectue les opérations suivantes dans votre base de données PostgreSQL :
+1. Crée / Met à jour les 3 Utilisateurs (1 Admin, 1 Sélecteur RH, 1 Sélecteur Dev)
+2. Crée un Événement ("TRAINING CAMP XIII")
+3. Assigne les 2 Sélecteurs (RH et Dev) à cet événement
+4. Crée des Candidatures (Candidats réalistes avec CV, compétences, projets)
+5. Crée les Assignations & Évaluations des candidats par les deux sélecteurs
+6. Enregistre les Logs d'audit correspondants
+
+--------------------------------------------------------------------------------
+ÉTAPE 1 : CHOISIR VOS EMAILS (Optionnel)
+--------------------------------------------------------------------------------
+Ouvrez le fichier "prisma/seed.ts". 
+Tout en haut, dans la section "SEED_CONFIG", vous pouvez modifier librement les 
+emails et les noms selon votre convenance :
+
+export const SEED_CONFIG = {
+  ADMIN_EMAIL: "om_admane@esi.dz",        // <- Votre email Admin ici
+  ADMIN_NAME: "Admane Oussama",
+
+  SELECTOR_RH_EMAIL: "rh@etic-club.net",     // <- Votre email Sélecteur RH ici
+  SELECTOR_RH_NAME: "Sarah Amrani",
+
+  SELECTOR_DEV_EMAIL: "dev@etic-club.net",   // <- Votre email Sélecteur Dev ici
+  SELECTOR_DEV_NAME: "Mehdi Benali",
+
+  EVENT_NAME: "TRAINING CAMP XIII",
+  EVENT_DESCRIPTION: "Hackathon et camp de sélection...",
+  EVENT_QUOTA: 60,
+};
+
+--------------------------------------------------------------------------------
+ÉTAPE 2 : INSTALLER LES DÉPENDANCES (Requis pour Prisma 7)
+--------------------------------------------------------------------------------
+Prisma v7 nécessite le driver adapter PostgreSQL (@prisma/adapter-pg et pg).
+Installez-les via :
+
+  npm install
+
+--------------------------------------------------------------------------------
+ÉTAPE 3 : GÉNÉRER LE CLIENT PRISMA (Obligatoire)
+--------------------------------------------------------------------------------
+Générez le client Prisma pour compiler le schéma dans "node_modules/.prisma/client" :
+
+  npx prisma generate
+
+(Note : Si vous sautez cette commande, vous aurez l'erreur :
+ "Cannot find module '.prisma/client/default'")
+
+--------------------------------------------------------------------------------
+ÉTAPE 4 : EXÉCUTER LE SCRIPT DE SEEDING
+--------------------------------------------------------------------------------
+Ouvrez votre terminal dans le dossier du projet ("platform_selection") et lancez :
+
+COMMANDE RECOMMANDÉE :
+  npm run db:seed
+
+OU VIA PRISMA DIRECTEMENT :
+  npx prisma db seed
+
+OU AVEC TSX :
+  npx tsx prisma/seed.ts
+
+--------------------------------------------------------------------------------
+ÉTAPE 5 : VÉRIFIER LES RÉSULTATS DANS PRISMA STUDIO
+--------------------------------------------------------------------------------
+Puisque vous avez déjà Prisma Studio lancé ("npx prisma studio" sur le port 5555) :
+1. Allez sur votre navigateur à l'adresse : http://localhost:5555
+2. Actualisez la page (F5).
+3. Cliquez sur les tables pour visualiser les données insérées :
+   - "users" : vous verrez vos 3 utilisateurs avec leurs rôles.
+   - "events" : vous verrez l'événement créé.
+   - "event_selectors" : vous verrez vos 2 sélecteurs assignés à l'événement #1.
+   - "candidates" : vous verrez les profils candidats créés.
+   - "assignments" & "evaluations" : vous verrez les avis RH et Dev.
+   - "logs" : vous verrez l'historique d'audit des actions.
+
+--------------------------------------------------------------------------------
+ALTERNATIVE DIRECTE DEPUIS LE NAVIGATEUR :
+--------------------------------------------------------------------------------
+Si votre serveur Next.js ("npm run dev") tourne, vous pouvez également injecter 
+les données simplement en ouvrant cette URL dans votre navigateur :
+  http://localhost:3000/api/seed
+================================================================================
