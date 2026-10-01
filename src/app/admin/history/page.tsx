@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./history.module.css";
 
 type DateFilterType =
@@ -10,36 +10,14 @@ type DateFilterType =
   | "Year"
   | "Custom";
 
-const events = [
-  {
-    id: 1,
-    title: "TRAINING CAMP XIII",
-    subtitle: "HACKATHON - 21 Dec",
-    required: 64,
-    satisfaction: 82,
-  },
-  {
-    id: 2,
-    title: "DEVELOPER CONFERENCE 2023",
-    subtitle: "CODE CHALLENGE - 5 Feb",
-    required: 70,
-    satisfaction: 68,
-  },
-  {
-    id: 3,
-    title: "MARKETING EXPO 2023",
-    subtitle: "BRAND STRATEGY - 22 Feb",
-    required: 40,
-    satisfaction: 74,
-  },
-  {
-    id: 4,
-    title: "DESIGN SYMPOSIUM 2023",
-    subtitle: "USER EXPERIENCE - 10 Mar",
-    required: 30,
-    satisfaction: 79,
-  },
-];
+type HistoryEvent = {
+  id: number;
+  title: string;
+  subtitle: string;
+  required: number;
+  satisfaction: number;
+  category: string;
+};
 
 const categories = ["All", "hackathons", "workshops"];
 
@@ -84,9 +62,24 @@ const years = [
 ];
 
 export default function HistoryPage() {
+  const [events, setEvents] = useState<HistoryEvent[]>([]);
+
+  useEffect(() => {
+    async function loadHistory() {
+      const response = await fetch("/api/history");
+      const data = await response.json();
+
+      setEvents(data);
+    }
+
+    loadHistory();
+  }, []);
+
   const [activeCategory, setActiveCategory] = useState("All");
 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  
 
   const [dateType, setDateType] =
     useState<DateFilterType>("Month");
@@ -108,6 +101,10 @@ export default function HistoryPage() {
   const handleDateTypeChange = (type: DateFilterType) => {
     setDateType(type);
   };
+  const filteredEvents =
+  activeCategory === "All"
+    ? events
+    : events.filter((event) => event.category === activeCategory);
 
   const handleApplyFilter = () => {
     /*
@@ -557,7 +554,7 @@ export default function HistoryPage() {
             ========================= */}
 
             <div className={styles.eventsList}>
-              {events.map((event) => (
+              {filteredEvents.map((event) => (
                 <article
                   key={event.id}
                   className={styles.eventCard}

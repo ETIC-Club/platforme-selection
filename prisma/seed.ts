@@ -107,6 +107,28 @@ async function main() {
     },
   });
   console.log(`   ✓ Événement : "${event.name}" [ID: ${event.id}, Quota: ${event.quotaParticipants}]`);
+  const secondEvent = await prisma.event.upsert({
+  where: { id: 2 },
+  update: {
+    name: "DEVELOPER CONFERENCE XIV",
+    description: "Conférence technique et challenge de développement du Club ETIC",
+    quotaParticipants: 40,
+    status: "termine",
+    createdBy: admin.id,
+  },
+  create: {
+    id: 2,
+    name: "DEVELOPER CONFERENCE XIV",
+    description: "Conférence technique et challenge de développement du Club ETIC",
+    quotaParticipants: 40,
+    status: "termine",
+    createdBy: admin.id,
+  },
+});
+
+console.log(
+  `   ✓ Événement : "${secondEvent.name}" [ID: ${secondEvent.id}, Quota: ${secondEvent.quotaParticipants}]`
+);
 
   // --------------------------------------------------------------------------
   // 3. ASSIGNATION DES 2 SÉLECTEURS À L'ÉVÉNEMENT (EventSelector)

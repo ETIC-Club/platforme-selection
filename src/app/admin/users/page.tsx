@@ -22,16 +22,12 @@ export default function UsersPage() {
   }[]
 >([]);
 
-useEffect(() => {
-  async function loadUsers() {
-    const response = await fetch("/api/users");
-    const data = await response.json();
+const loadUsers = async () => {
+  const response = await fetch("/api/users");
+  const data = await response.json();
 
-    setUsers(data);
-  }
-
-  loadUsers();
-}, []);
+  setUsers(data);
+};
   return (
    
     <main className={styles.page}>
@@ -194,9 +190,10 @@ useEffect(() => {
             </footer>
           </div>
         </section>
-        <AddUserModal
+       <AddUserModal
   isOpen={isAddUserOpen}
   onClose={() => setIsAddUserOpen(false)}
+  onUserAdded={loadUsers}
 />
       </div>
     </main>

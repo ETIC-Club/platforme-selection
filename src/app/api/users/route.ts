@@ -1,98 +1,489 @@
 import { NextResponse } from "next/server";
 
-const users = [
-  {
-    id: 1,
-    name: "Taguemount Myassa",
-    email: "myassa@example.com",
-    joined: "Mar 1, 2023",
-    events: 2,
-    candidates: 7,
-    role: "Selector RH",
-    roleType: "selector",
-  },
-  {
-    id: 2,
-    name: "Azrou Souhila",
-    email: "souhila@example.com",
-    joined: "Jan 26, 2023",
-    events: 3,
-    candidates: 3,
-    role: "Selector RH",
-    roleType: "selector",
-  },
-  {
-    id: 3,
-    name: "Ben Yahia Nassim",
-    email: "nassim@example.com",
-    joined: "Feb 18, 2023",
-    events: 5,
-    candidates: 1,
-    role: "DEV",
-    roleType: "dev",
-  },
-  {
-    id: 4,
-    name: "Bouyakoub Hadil",
-    email: "hadil@example.com",
-    joined: "Feb 12, 2023",
-    events: 2,
-    candidates: 5,
-    role: "DEV",
-    roleType: "dev",
-  },
-  {
-    id: 5,
-    name: "Hamid Maroua",
-    email: "maroua@example.com",
-    joined: "Dec 17, 2025",
-    events: 1,
-    candidates: 5,
-    role: "Selector RH",
-    roleType: "selector",
-  },
-  {
-    id: 6,
-    name: "Saoula Lina",
-    email: "lina@example.com",
-    joined: "Mar 13, 2024",
-    events: 3,
-    candidates: 1,
-    role: "DEV",
-    roleType: "dev",
-  },
-  {
-    id: 7,
-    name: "Meddah Mohammed",
-    email: "mohammed@example.com",
-    joined: "Mar 18, 2024",
-    events: 4,
-    candidates: 1,
-    role: "Selector RH",
-    roleType: "selector",
-  },
-  {
-    id: 8,
-    name: "Meddah Mohammed",
-    email: "mohammed2@example.com",
-    joined: "Mar 18, 2024",
-    events: 4,
-    candidates: 1,
-    role: "Selector RH",
-    roleType: "selector",
-  },
-  {
-    id: 9,
-    name: "Meddah Mohammed",
-    email: "mohammed3@example.com",
-    joined: "Mar 18, 2024",
-    events: 4,
-    candidates: 1,
-    role: "Selector RH",
-    roleType: "selector",
-  },
-];
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  return NextResponse.json(users);
+  try {
+    if (!prisma) {
+      return NextResponse.json(
+        { error: "Database is not configured." },
+        { status: 500 }
+      );
+    }
+
+    const users = await prisma.user.findMany({
+      include: {
+        eventSelectors: {
+          include: {
+            event: true,
+            assignments: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const formattedUsers = users.map((user) => {
+      const events = user.eventSelectors.length;
+
+      const candidates = user.eventSelectors.reduce(
+        (total, selector) =>
+          total + selector.assignments.length,
+        0
+      );
+
+      const selectorType =
+        user.eventSelectors[0]?.selectorType;
+
+      const isSelector =
+        selectorType === "RH" ||
+        selectorType === "Technique";
+
+      return {
+        id: user.id,
+        name: user.fullName ?? "",
+        email: user.email,
+        joined: user.createdAt.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }),
+        events,
+        candidates,
+        role: isSelector
+          ? `Selector ${selectorType}`
+          : "DEV",
+        roleType: isSelector ? "selector" : "dev",
+      };
+    });
+
+    return NextResponse.json(formattedUsers);
+  } catch (error) {
+    console.error("GET /api/users error:", error);
+
+    return NextResponse.json(
+      { error: "Unable to load users." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    if (!prisma) {
+      return NextResponse.json(
+        { error: "Database is not configured." },
+        { status: 500 }
+      );
+    }
+
+    const body = await request.json();
+
+    const {
+      firstName,
+      lastName,
+      email,
+      role,
+      event,
+    } = body;
+
+    if (!firstName?.trim()) {
+      return NextResponse.json(
+        { error: "First name is required." },
+        { status: 400 }
+      );
+    }
+
+    if (!lastName?.trim()) {
+      return NextResponse.json(
+        { error: "Last name is required." },
+        { status: 400 }
+      );
+    }
+
+    if (!email?.trim()) {
+      return NextResponse.json(
+        { error: "Email is required." },
+        { status: 400 }
+      );
+    }
+
+    if (!role) {
+      return NextResponse.json(
+        { error: "Role is required." },
+        { status: 400 }
+      );
+    }
+
+    const selectorType =
+      role === "Selector RH"
+        ? "RH"
+        : role === "Selector Technique"
+          ? "Technique"
+          : null;
+
+    if (selectorType && !event) {
+      return NextResponse.json(
+        { error: "Event is required for selectors." },
+        { status: 400 }
+      );
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        email: email.trim(),
+      },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "A user with this email already exists." },
+        { status: 409 }
+      );
+    }
+
+    let eventRecord = null;
+
+    if (selectorType) {
+      eventRecord = await prisma.event.findFirst({
+        where: {
+          name: event.trim(),
+        },
+      });
+
+      if (!eventRecord) {
+        return NextResponse.json(
+          { error: "Event not found." },
+          { status: 404 }
+        );
+      }
+    }
+
+    const newUser = await prisma.user.create({
+      data: {
+        googleId: `manual-${crypto.randomUUID()}`,
+        email: email.trim(),
+        fullName: `${firstName.trim()} ${lastName.trim()}`,
+        isSuperAdmin: false,
+
+        ...(selectorType && eventRecord
+          ? {
+              eventSelectors: {
+                create: {
+                  eventId: eventRecord.id,
+                  selectorType,
+                  isActive: true,
+                },
+              },
+            }
+          : {}),
+      },
+    });
+
+    return NextResponse.json(
+      {
+        message: "User created successfully.",
+        id: newUser.id,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("POST /api/users error:", error);
+
+    return NextResponse.json(
+      { error: "Unable to create user." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    if (!prisma) {
+      return NextResponse.json(
+        { error: "Database is not configured." },
+        { status: 500 }
+      );
+    }
+
+    const body = await request.json();
+
+    const id = Number(body.id);
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "User id is required." },
+        { status: 400 }
+      );
+    }
+
+    const currentUser = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        eventSelectors: true,
+      },
+    });
+
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: "User not found." },
+        { status: 404 }
+      );
+    }
+
+    const updateData: {
+      fullName?: string;
+      email?: string;
+    } = {};
+
+    if (body.name !== undefined) {
+      if (
+        typeof body.name !== "string" ||
+        !body.name.trim()
+      ) {
+        return NextResponse.json(
+          { error: "Name cannot be empty." },
+          { status: 400 }
+        );
+      }
+
+      updateData.fullName = body.name.trim();
+    }
+
+    if (body.email !== undefined) {
+      if (
+        typeof body.email !== "string" ||
+        !body.email.trim()
+      ) {
+        return NextResponse.json(
+          { error: "Email cannot be empty." },
+          { status: 400 }
+        );
+      }
+
+      updateData.email = body.email.trim();
+    }
+
+    if (
+      updateData.email &&
+      updateData.email !== currentUser.email
+    ) {
+      const existingUser = await prisma.user.findUnique({
+        where: {
+          email: updateData.email,
+        },
+      });
+
+      if (existingUser) {
+        return NextResponse.json(
+          { error: "A user with this email already exists." },
+          { status: 409 }
+        );
+      }
+    }
+
+    const role = body.role;
+
+    if (role !== undefined) {
+      const validRoles = [
+        "DEV",
+        "Selector RH",
+        "Selector Technique",
+      ];
+
+      if (!validRoles.includes(role)) {
+        return NextResponse.json(
+          { error: "Invalid role." },
+          { status: 400 }
+        );
+      }
+
+      const selectorType =
+        role === "Selector RH"
+          ? "RH"
+          : role === "Selector Technique"
+            ? "Technique"
+            : null;
+
+      /*
+       * DEV
+       * ----
+       * No selector assignment is needed.
+       */
+      if (role === "DEV") {
+        if (currentUser.eventSelectors.length > 0) {
+          await prisma.eventSelector.deleteMany({
+            where: {
+              userId: id,
+            },
+          });
+        }
+      }
+
+      /*
+       * SELECTOR
+       * --------
+       * A selector must have an event.
+       */
+      if (selectorType) {
+        if (
+          typeof body.event !== "string" ||
+          !body.event.trim()
+        ) {
+          return NextResponse.json(
+            {
+              error:
+                "An event is required for selector roles.",
+            },
+            { status: 400 }
+          );
+        }
+
+        const eventRecord = await prisma.event.findFirst({
+          where: {
+            name: body.event.trim(),
+          },
+        });
+
+        if (!eventRecord) {
+          return NextResponse.json(
+            { error: "Event not found." },
+            { status: 404 }
+          );
+        }
+
+        const existingSelector =
+          currentUser.eventSelectors[0];
+
+        if (existingSelector) {
+          await prisma.eventSelector.update({
+            where: {
+              id: existingSelector.id,
+            },
+            data: {
+              eventId: eventRecord.id,
+              selectorType,
+              isActive: true,
+            },
+          });
+        } else {
+          await prisma.eventSelector.create({
+            data: {
+              userId: id,
+              eventId: eventRecord.id,
+              selectorType,
+              isActive: true,
+            },
+          });
+        }
+      }
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return NextResponse.json({
+      id: updatedUser.id,
+      name: updatedUser.fullName ?? "",
+      email: updatedUser.email,
+    });
+  } catch (error) {
+    console.error("PATCH /api/users error:", error);
+
+    return NextResponse.json(
+      { error: "Unable to update user." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    if (!prisma) {
+      return NextResponse.json(
+        { error: "Database is not configured." },
+        { status: 500 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = Number(searchParams.get("id"));
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "User id is required." },
+        { status: 400 }
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found." },
+        { status: 404 }
+      );
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Remove nullable references to this user first.
+      await tx.event.updateMany({
+        where: { createdBy: id },
+        data: { createdBy: null },
+      });
+
+      await tx.eventSelector.updateMany({
+        where: { addedBy: id },
+        data: { addedBy: null },
+      });
+
+      await tx.assignment.updateMany({
+        where: { assignedBy: id },
+        data: { assignedBy: null },
+      });
+
+      await tx.evaluationHistory.updateMany({
+        where: { modifiedBy: id },
+        data: { modifiedBy: null },
+      });
+
+      await tx.export.updateMany({
+        where: { exportedBy: id },
+        data: { exportedBy: null },
+      });
+
+      await tx.log.updateMany({
+        where: { userId: id },
+        data: { userId: null },
+      });
+
+      // A selector belongs to a user, so remove the user's
+      // event selectors and their assignments.
+      await tx.eventSelector.deleteMany({
+        where: { userId: id },
+      });
+
+      await tx.user.delete({
+        where: { id },
+      });
+    });
+
+    return NextResponse.json({
+      message: "User deleted successfully.",
+      id,
+    });
+  } catch (error) {
+    console.error("DELETE /api/users error:", error);
+
+    return NextResponse.json(
+      { error: "Unable to delete user." },
+      { status: 500 }
+    );
+  }
 }

@@ -6,23 +6,33 @@ import styles from "./AddUserModal.module.css";
 type AddUserModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  onUserAdded: () => Promise<void>;
+};
+
+type Event = {
+  id: number;
+  name: string;
 };
 
 const roles = ["DEV", "Selector RH", "Selector Technique"];
 
-const events = ["Event 1", "Event 2", "Event 3"];
-
 export default function AddUserModal({
   isOpen,
   onClose,
+  onUserAdded,
 }: AddUserModalProps) {
-  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [shouldRender, setShouldRender] = useState(false);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [event, setEvent] = useState("");
+
+  const [events, setEvents] = useState<Event[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventDropdownOpen, setEventDropdownOpen] = useState(false);
+  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -36,11 +46,39 @@ export default function AddUserModal({
     }
   }, [isOpen]);
 
-  if (!shouldRender) {
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const loadEvents = async () => {
+      try {
+        setEventsLoading(true);
+
+        const response = await fetch("/api/events");
+
+if (!response.ok) {
+  throw new Error("Unable to load events.");
+}
+
+const data = await response.json();
+setEvents(data.events);
+      } catch (error) {
+        console.error("Error loading events:", error);
+        setEvents([]);
+      } finally {
+        setEventsLoading(false);
+      }
+    };
+
+    loadEvents();
+  }, [isOpen]);
+
+  if (!shouldRender && !isOpen) {
     return null;
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
 
     if (!firstName.trim()) {
@@ -71,10 +109,40 @@ export default function AddUserModal({
       return;
     }
 
-    // Backend will be connected later.
-    alert("Utilisateur prêt à être ajouté.");
+    try {
+      const response = await fetch("/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          role,
+          event,
+        }),
+      });
 
-    onClose();
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "Impossible d'ajouter l'utilisateur.");
+        return;
+      }
+
+      await onUserAdded();
+
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setRole("");
+      setEvent("");
+
+      onClose();
+    } catch {
+      alert("Une erreur est survenue lors de l'ajout de l'utilisateur.");
+    }
   };
 
   return (
@@ -145,54 +213,103 @@ export default function AddUserModal({
           </div>
 
           <div className={styles.field}>
-            <label htmlFor="role">Role</label>
+  <label htmlFor="role">Role</label>
 
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => {
-                const selectedRole = e.target.value;
+  <div className={styles.customSelect}>
+    <button
+      type="button"
+      className={styles.customSelectButton}
+      onClick={() =>
+        setRoleDropdownOpen((prev) => !prev)
+      }
+      aria-expanded={roleDropdownOpen}
+    >
+      <span>
+        {role || "Sélectionnez son role"}
+      </span>
 
-                setRole(selectedRole);
+      <span className={styles.customSelectArrow}>
+        ▼
+      </span>
+    </button>
 
-                if (selectedRole === "DEV" || selectedRole === "") {
-                  setEvent("");
-                }
-              }}
-            >
-              <option value="">Sélectionnez son role</option>
+    {roleDropdownOpen && (
+      <div className={styles.customSelectOptions}>
+        {roles.map((item) => (
+          <button
+            key={item}
+            type="button"
+            className={styles.customSelectOption}
+            onClick={() => {
+              setRole(item);
+              setRoleDropdownOpen(false);
 
-              {roles.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </div>
+              if (
+                item === "DEV" ||
+                item === ""
+              ) {
+                setEvent("");
+                setEventDropdownOpen(false);
+              }
+            }}
+          >
+            {item}
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+</div>
 
           <div className={styles.field}>
-            <label htmlFor="event">
-              choisissez l’événement du selecteur
-            </label>
+  <label htmlFor="event">
+    choisissez l’événement du selecteur
+  </label>
 
-            <select
-              id="event"
-              value={event}
-              onChange={(e) => setEvent(e.target.value)}
-              disabled={role === "DEV" || role === ""}
+  <div className={styles.customSelect}>
+    <button
+      type="button"
+      className={styles.customSelectButton}
+      disabled={role === "DEV" || role === ""}
+      onClick={() => setEventDropdownOpen((prev) => !prev)}
+    >
+      <span>
+        {eventsLoading
+          ? "Chargement des événements..."
+          : event || "Sélectionnez un événement"}
+      </span>
+
+      <span className={styles.customSelectArrow}>▼</span>
+    </button>
+
+    {eventDropdownOpen &&
+      role !== "DEV" &&
+      role !== "" && (
+        <div className={styles.customSelectOptions}>
+          {events.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={styles.customSelectOption}
+              onClick={() => {
+                setEvent(item.name);
+                setEventDropdownOpen(false);
+              }}
+              title={item.name}
             >
-              <option value="">Sélectionnez un événement</option>
+              {item.name}
+            </button>
+          ))}
+        </div>
+      )}
+  </div>
+</div>
 
-              {events.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button type="submit" className={styles.submitButton}>
-            ajouter l'utilisateur
+          <button
+            type="submit"
+            className={styles.submitButton}
+          >
+            ajouter l&apos;utilisateur
           </button>
         </form>
       </div>
