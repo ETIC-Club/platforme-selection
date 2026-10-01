@@ -52,6 +52,12 @@
   border-radius: 12px;
   background: #e4e4e4;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
 }
 
 .identity {
@@ -196,14 +202,39 @@
 }
 
 .showMoreButton {
-  display: block;
-  margin: 8px auto 0;
-  padding: 10px 20px;
-  border-radius: 10px;
-  border: 1px solid #e2e2e2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 24px auto 0;
+  padding: 12px 28px;
+  border-radius: 99px;
+  border: 1px solid #E5E7EB;
   background: white;
+  color: #4B5563;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.showMoreButton:hover:not(:disabled) {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+  color: #111827;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+}
+
+.showMoreButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.showMoreButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #F3F4F6;
 }
 
 .emptyState {

@@ -11,10 +11,14 @@ export interface CandidateDetailEvaluation {
 export interface CandidateDetail {
   id: number
   fullName: string
+  nom: string | null
+  prenom: string | null
   email: string | null
   telephone: string | null
   extraData: Record<string, unknown> | null
   evaluations: CandidateDetailEvaluation[]
+  createdAt: string
+  finalStatus: string | null
 }
 
 /**
@@ -59,5 +63,9 @@ export async function getCandidateDetail(candidateId: number): Promise<Candidate
     // since that's how extraData gets stored from the CSV import.
     extraData: candidate.extraData as Record<string, unknown> | null,
     evaluations,
+    nom: candidate.nom,
+    prenom: candidate.prenom,
+    createdAt: candidate.createdAt.toISOString(),
+    finalStatus: candidate.finalStatus,
   }
 }

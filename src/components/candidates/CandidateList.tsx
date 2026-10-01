@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import type { CandidateListItem, CandidateStatusFilter } from '@/lib/candidates'
-import { CandidateDetailModal } from './CandidateDetailModal'
+import Link from 'next/link'
 import CustomDropdown from '@/components/CustomDropdown'
 import styles from './CandidateList.module.css'
 
@@ -14,6 +14,20 @@ import styles from './CandidateList.module.css'
  * This is the CSS Modules pattern, and it's why nothing changed about the
  * component's LOGIC below, just which className strings get used.
  */
+
+// Simple deterministic color generator based on name
+function getAvatarColor(name: string) {
+  const colors = ['#0d9488', '#e11d48', '#2563eb', '#16a34a', '#d97706', '#7c3aed', '#c026d3'];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+}
+
+function getInitials(name: string) {
+  return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || '?'
+}
 
 interface Props {
   eventId: number
@@ -48,8 +62,6 @@ export function CandidateList({
   const [nextCursor, setNextCursor] = useState(initialNextCursor)
   const [total, setTotal] = useState(initialTotal)
   const [isPending, startTransition] = useTransition()
-  const [openCandidateId, setOpenCandidateId] = useState<number | null>(null)
-
   const router = useRouter()
   const pathname = usePathname()
 
@@ -145,7 +157,12 @@ export function CandidateList({
 
         return (
           <div key={c.id} className={styles.row}>
-            <div className={styles.avatar} />
+            <div 
+              className={styles.avatar}
+              style={{ backgroundColor: getAvatarColor(c.fullName) }}
+            >
+              {getInitials(c.fullName)}
+            </div>
 
             <div className={styles.identity}>
               <strong>{c.fullName}</strong>
@@ -239,16 +256,16 @@ export function CandidateList({
               </>
             )}
 
-            <button
+            <Link
               className={styles.arrowButton}
               aria-label="View details"
-              onClick={() => setOpenCandidateId(c.id)}
+              href={`/events/${eventId}/candidatures/${c.id}`}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="7" y1="17" x2="17" y2="7"></line>
                 <polyline points="7 7 17 7 17 17"></polyline>
               </svg>
-            </button>
+            </Link>
           </div>
         )
       })}
@@ -263,12 +280,6 @@ export function CandidateList({
         </button>
       )}
 
-      {openCandidateId !== null && (
-        <CandidateDetailModal
-          candidateId={openCandidateId}
-          onClose={() => setOpenCandidateId(null)}
-        />
-      )}
     </div>
   )
 }

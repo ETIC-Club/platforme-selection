@@ -86,10 +86,10 @@ export function Sidebar({ isSuperAdmin, eventContext }: SidebarProps) {
       icon: UsersIcon,
       active: pathname.includes(`/events/${eventId}/candidatures`),
       rolesAllowed: "all" as const,
-      subItems: [
+      subItems: isSuperAdmin ? [
         { name: "To be reviewed", href: `/events/${eventId}/candidatures/to-review` },
         { name: "Decision status", href: `/events/${eventId}/candidatures/decisions` },
-      ]
+      ] : []
     },
   ];
 
