@@ -14,10 +14,28 @@ type HistoryEvent = {
   id: number;
   title: string;
   subtitle: string;
+  date?: string;
   required: number;
   satisfaction: number;
   category: string;
+  candidatesCount?: number;
+  acceptedCount?: number;
 };
+
+function formatEventDate(dateStr?: string) {
+  if (!dateStr) return "N/A";
+  try {
+    const d = new Date(dateStr.includes("T") ? dateStr : `${dateStr}T12:00:00Z`);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
 
 const categories = ["All", "hackathons", "workshops"];
 
@@ -579,26 +597,34 @@ export default function HistoryPage() {
                     </span>
                   </div>
 
-                  <div
-                    className={
-                      styles.satisfaction
-                    }
-                  >
-                    <span>
-                      participant&apos;s
-                      satisfaction rate
-                    </span>
+                  <div className={styles.eventMetrics}>
+                    <div className={styles.metricItem}>
+                      <span className={styles.metricLabel}>Date</span>
+                      <span className={styles.metricValue}>
+                        {formatEventDate(event.date)}
+                      </span>
+                    </div>
 
-                    <div
-                      className={
-                        styles.progress
-                      }
-                    >
-                      <div
-                        style={{
-                          width: `${event.satisfaction}%`,
-                        }}
-                      />
+                    <div className={styles.metricItem}>
+                      <span className={styles.metricLabel}>Candidates</span>
+                      <span className={styles.metricValue}>
+                        {event.candidatesCount ?? 0} candidate
+                        {(event.candidatesCount ?? 0) !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+
+                    <div className={styles.metricItem}>
+                      <span className={styles.metricLabel}>Admitted</span>
+                      <span className={styles.metricValue}>
+                        <span className={styles.acceptedBadge}>
+                          {event.acceptedCount ?? 0}
+                        </span>
+                        {event.required > 0 && (
+                          <span className={styles.quotaText}>
+                            / {event.required}
+                          </span>
+                        )}
+                      </span>
                     </div>
                   </div>
 

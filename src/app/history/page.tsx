@@ -65,6 +65,21 @@ const YEARS = Array.from(
   (_, index) => currentYear - index
 );
 
+function formatEventDate(dateStr?: string) {
+  if (!dateStr) return "N/A";
+  try {
+    const d = new Date(dateStr.includes("T") ? dateStr : `${dateStr}T12:00:00Z`);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
 function HistoryContent({
   searchQuery,
 }: {
@@ -1206,25 +1221,34 @@ function HistoryContent({
                   </p>
                 </div>
 
-                <div
-                  className={
-                    styles.satisfaction
-                  }
-                >
-                  <span>
-                    Satisfaction
-                  </span>
+                <div className={styles.eventMetrics}>
+                  <div className={styles.metricItem}>
+                    <span className={styles.metricLabel}>Date</span>
+                    <span className={styles.metricValue}>
+                      {formatEventDate(event.date)}
+                    </span>
+                  </div>
 
-                  <div
-                    className={
-                      styles.progress
-                    }
-                  >
-                    <div
-                      style={{
-                        width: `${event.satisfaction}%`,
-                      }}
-                    />
+                  <div className={styles.metricItem}>
+                    <span className={styles.metricLabel}>Candidates</span>
+                    <span className={styles.metricValue}>
+                      {event.candidatesCount} candidate
+                      {event.candidatesCount !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+
+                  <div className={styles.metricItem}>
+                    <span className={styles.metricLabel}>Admitted</span>
+                    <span className={styles.metricValue}>
+                      <span className={styles.acceptedBadge}>
+                        {event.acceptedCount}
+                      </span>
+                      {event.required > 0 && (
+                        <span className={styles.quotaText}>
+                          / {event.required}
+                        </span>
+                      )}
+                    </span>
                   </div>
                 </div>
 
@@ -1245,7 +1269,19 @@ function HistoryContent({
                     }
                     aria-label={`Comment on ${event.title}`}
                   >
-                    💬
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
                     <span>
                       Comment
                     </span>
@@ -1525,13 +1561,17 @@ function HistoryContent({
                   }
                 >
                   <span>
-                    Satisfaction
+                    Selection Rate
                   </span>
 
                   <strong>
-                    {
-                      selectedEvent.satisfaction
-                    }
+                    {selectedEvent.candidatesCount > 0
+                      ? Math.round(
+                          (selectedEvent.acceptedCount /
+                            selectedEvent.candidatesCount) *
+                            100
+                        )
+                      : selectedEvent.satisfaction}
                     %
                   </strong>
                 </div>
@@ -1548,13 +1588,17 @@ function HistoryContent({
                   }
                 >
                   <span>
-                    Satisfaction
+                    Selection Rate (Accepted / Total)
                   </span>
 
                   <strong>
-                    {
-                      selectedEvent.satisfaction
-                    }
+                    {selectedEvent.candidatesCount > 0
+                      ? Math.round(
+                          (selectedEvent.acceptedCount /
+                            selectedEvent.candidatesCount) *
+                            100
+                        )
+                      : selectedEvent.satisfaction}
                     %
                   </strong>
                 </div>
@@ -1566,7 +1610,15 @@ function HistoryContent({
                 >
                   <div
                     style={{
-                      width: `${selectedEvent.satisfaction}%`,
+                      width: `${
+                        selectedEvent.candidatesCount > 0
+                          ? Math.round(
+                              (selectedEvent.acceptedCount /
+                                selectedEvent.candidatesCount) *
+                                100
+                            )
+                          : selectedEvent.satisfaction
+                      }%`,
                     }}
                   />
                 </div>
