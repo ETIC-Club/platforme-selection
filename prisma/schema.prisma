@@ -8,7 +8,7 @@ datasource db {
 
 model User {
   id              Int                 @id @default(autoincrement())
-  googleId        String              @unique @map("google_id")
+  googleId        String?              @unique @map("google_id")
   email           String              @unique
   fullName        String?             @map("full_name")
   isSuperAdmin    Boolean             @default(false) @map("is_super_admin")
