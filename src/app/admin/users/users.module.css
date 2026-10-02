@@ -1,0 +1,1612 @@
+/* =========================
+   GOTHAM FONT
+   ========================= */
+
+@font-face {
+  font-family: "Gotham";
+  src: url("/fonts/Gotham-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gotham";
+  src: url("/fonts/Gotham-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gotham";
+  src: url("/fonts/Gotham-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+/* =========================
+   PAGE
+   ========================= */
+
+.page {
+  width: 100%;
+  height: 100vh;
+
+  display: flex;
+
+  background: #ffffff;
+  color: #24242a;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  font-family: "Gotham", Arial, sans-serif;
+}
+
+
+/* =========================
+   DASHBOARD
+   ========================= */
+
+.dashboard {
+  width: 100%;
+  min-height: 100vh;
+  height: auto;
+
+  display: flex;
+  gap: 18px;
+
+  padding: 30px 30px 35px 27px;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================
+   SIDEBAR
+   ========================= */
+
+.sidebar {
+  width: 270px;
+  min-width: 270px;
+  height: auto;
+  min-height: calc(100vh - 65px);
+
+  flex-shrink: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #f7f7f7;
+
+  border-radius: 15px;
+
+  padding: 27px 24px;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================
+   LOGO
+   ========================= */
+
+.logoArea {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  margin-bottom: 50px;
+  padding: 0 4px;
+}
+
+.logoMark {
+  width: 31px;
+  height: 31px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+
+  color: #ffffff;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.logoText {
+  color: #202025;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+/* =========================
+   MENU
+   ========================= */
+
+.menuSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionTitle {
+  padding: 0 5px;
+  margin-bottom: 15px;
+
+  color: #77777f;
+
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.navigation {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.navigation a,
+.logout {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 10px 8px;
+
+  border-radius: 8px;
+
+  color: #85858d;
+
+  font-family: "Gotham", Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+
+  text-decoration: none;
+
+  box-sizing: border-box;
+}
+
+.navigation a span,
+.logout span {
+  width: 14px;
+
+  text-align: center;
+
+  font-size: 12px;
+}
+
+.navigation a:hover {
+  background: #eeeeef;
+}
+
+.navigation .activeLink {
+  background: #ffffff;
+  color: #202025;
+}
+
+.navigation .activeLink::before {
+  content: "";
+
+  position: absolute;
+
+  left: -24px;
+  top: 7px;
+
+  width: 4px;
+  height: 28px;
+
+  border-radius: 0 4px 4px 0;
+
+  background: linear-gradient(
+    180deg,
+    #02a9a2 0%,
+    #1aaf5d 100%
+  );
+}
+
+.disabledLink {
+  cursor: default;
+}
+
+.extraSection {
+  margin-top: auto;
+
+  padding-top: 60px;
+}
+
+.logout {
+  color: #a0a0a6;
+}
+
+
+/* =========================
+   CONTENT
+   ========================= */
+
+.content {
+  flex: 1;
+
+  min-width: 0;
+  min-height: 0;
+
+  height: auto;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #ffffff;
+
+  overflow: visible;
+
+  padding: 0;
+}
+
+
+/* =========================
+   TOP BAR
+   ========================= */
+
+.topbar {
+  height: 81px;
+  min-height: 81px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 29px;
+
+  background: #f7f7f7;
+
+  border-radius: 15px;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================
+   SEARCH
+   ========================= */
+
+.search {
+  width: 678px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 0 15px;
+
+  border: 0;
+  border-radius: 21px;
+
+  background: #ffffff;
+
+  color: #9999a1;
+
+  box-sizing: border-box;
+}
+
+.search span {
+  font-size: 18px;
+}
+
+.search input {
+  width: 100%;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #44444a;
+
+  font-family: "Gotham", Arial, sans-serif;
+  font-size: 13px;
+}
+
+.search input::placeholder {
+  color: #a5a5ad;
+}
+
+
+/* =========================
+   PROFILE
+   ========================= */
+
+.profile {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.notification {
+  width: 50px;
+  height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  color: #55555c;
+
+  font-size: 14px;
+}
+
+.profileInfo {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  width: 252px;
+  height: 50px;
+
+  padding: 4px 12px 4px 10px;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+}
+
+.profileAvatar {
+  width: 31px;
+  height: 31px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+
+  color: #ffffff;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.profileInfo > div:last-child {
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.profileInfo strong {
+  color: #303036;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.profileInfo span {
+  color: #8e8e96;
+
+  font-size: 8px;
+}
+
+
+/* =========================
+   MAIN CONTENT
+   ========================= */
+
+.mainContent {
+  flex: 1 1 auto;
+
+  min-height: 0;
+  height: auto;
+
+  margin-top: 23px;
+
+  padding: 28px 29px 25px;
+
+  background: #f7f7f7;
+
+  border-radius: 15px;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: visible;
+  overflow-y: auto;
+}
+
+
+/* =========================
+   PAGE HEADER
+   ========================= */
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 25px;
+}
+
+.pageHeader h1 {
+  margin: 0;
+
+  color: #202025;
+
+  font-family: "Gotham", Arial, sans-serif;
+
+  font-size: 28px;
+  font-weight: 700;
+
+  letter-spacing: -0.4px;
+}
+
+
+/* =========================
+   ADD USER BUTTON
+   ========================= */
+
+.addButton {
+  width: 191px;
+  height: 43px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 20px;
+
+  border: 0;
+  border-radius: 10px;
+
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+
+  color: #ffffff;
+
+  font-family: "Gotham", Arial, sans-serif;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.addButton span {
+  font-size: 14px;
+}
+
+.addButton:hover {
+  opacity: 0.9;
+}
+
+.addButton:active {
+  transform: scale(0.98);
+}
+
+
+/* =========================
+   FILTERS
+   ========================= */
+
+.filters {
+  display: flex;
+  align-items: center;
+
+  gap: 27px;
+
+  margin-bottom: 40px;
+}
+
+.filters button {
+  width: 113px;
+  height: 40px;
+
+  border: 1px solid #413b89;
+  border-radius: 20px;
+
+  background: #ffffff;
+
+  color: #5d566d;
+
+  padding: 0;
+
+  font-family: "Gotham", Arial, sans-serif;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.filters button:hover {
+  background: #f8f5ff;
+}
+
+.filters .filterActive {
+  background: #f5f1ff;
+
+  color: #6651a0;
+
+  font-weight: 700;
+}
+
+
+/* =========================
+   TABLE
+   ========================= */
+
+.tableWrapper {
+  width: 100%;
+
+  flex-shrink: 0;
+
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.tableWrapper table {
+  width: 100%;
+
+  min-width: 850px;
+
+  border-collapse: separate;
+  border-spacing: 0;
+
+  table-layout: fixed;
+}
+
+
+/* =========================
+   TABLE HEADER
+   ========================= */
+
+.tableWrapper thead th {
+  height: 50px;
+
+  padding: 0 14px;
+
+  background: #f3f4f6;
+
+  color: #7e8088;
+
+  font-family: "Gotham", Arial, sans-serif;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  text-align: left;
+
+  white-space: nowrap;
+
+  vertical-align: middle;
+}
+
+.tableWrapper thead th:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.tableWrapper thead th:last-child {
+  border-radius: 0 6px 6px 0;
+}
+
+
+/* =========================
+   TABLE COLUMNS
+   ========================= */
+
+/*
+  IMPORTANT:
+  There are 6 cells per row:
+  1. Name
+  2. Joined
+  3. Events
+  4. Candidates
+  5. Role
+  6. Actions
+
+  The old CSS only defined 5 columns,
+  which caused the action cell to be pushed
+  outside the table and cropped.
+*/
+
+.tableWrapper th:nth-child(1) {
+  width: 25%;
+}
+
+.tableWrapper th:nth-child(2) {
+  width: 21%;
+}
+
+.tableWrapper th:nth-child(3) {
+  width: 17%;
+}
+
+.tableWrapper th:nth-child(4) {
+  width: 19%;
+}
+
+.tableWrapper th:nth-child(5) {
+  width: 13%;
+}
+
+.tableWrapper th:nth-child(6) {
+  width: 5%;
+}
+
+
+/* =========================
+   TABLE CELLS
+   ========================= */
+
+.tableWrapper td {
+  height: 50px;
+
+  padding: 0 14px;
+
+  border-bottom: 1px solid #eeeeef;
+
+  color: #4e4e55;
+
+  font-family: "Gotham", Arial, sans-serif;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  white-space: nowrap;
+
+  vertical-align: middle;
+
+  box-sizing: border-box;
+}
+
+.tableWrapper tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+
+/* =========================
+   USER ROW
+   ========================= */
+
+.userRow {
+  position: relative;
+
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.2s ease;
+}
+
+
+/* Normal row */
+
+.userRow td {
+  background: transparent;
+
+  transition:
+    background 0.25s ease,
+    color 0.2s ease;
+}
+
+
+/* Hover:
+   transparent version of the site's green */
+
+.userRow:hover td {
+  background: rgba(26, 175, 93, 0.12);
+
+  color: #303036;
+}
+
+
+/* Rounded complete row */
+
+.userRow:hover td:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.userRow:hover td:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+
+/* Small shadow */
+
+.userRow:hover {
+  box-shadow:
+    0 5px 16px rgba(26, 175, 93, 0.10);
+}
+
+
+/* Keep role badge */
+
+.userRow:hover .role {
+  color: #333;
+}
+
+
+/* =========================
+   ROLE BADGES
+   ========================= */
+
+.role {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width: 72px;
+  min-height: 24px;
+
+  padding: 4px 10px;
+
+  border-radius: 9px;
+
+  font-family: "Gotham", Arial, sans-serif;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  box-sizing: border-box;
+
+  vertical-align: middle;
+}
+
+.selectorRole {
+  background: #f8e7b9;
+
+  color: #6e5b2e;
+}
+
+.devRole {
+  background: #df8994;
+
+  color: #ffffff;
+}
+
+
+/* =========================
+   ACTION CELL
+   ========================= */
+
+.actionCell {
+  width: 100%;
+
+  height: 50px;
+
+  padding: 0 8px;
+
+  position: relative;
+
+  vertical-align: middle;
+
+  text-align: center;
+}
+
+.actionMenuWrapper {
+  position: relative;
+
+  width: 100%;
+  height: 50px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* =========================
+   THREE DOTS BUTTON
+   ========================= */
+
+.moreButton {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 18px;
+  font-weight: 700;
+
+  letter-spacing: 2px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  opacity: 0;
+
+  transform: translateY(2px);
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+
+/* Show dots when row is hovered */
+
+.userRow:hover .moreButton,
+.moreButton:focus {
+  opacity: 1;
+
+  transform: translateY(0);
+}
+
+
+/* Green translucent action button */
+
+.userRow:hover .moreButton {
+  background: rgba(26, 175, 93, 0.45);
+}
+
+.moreButton:hover {
+  background: rgba(26, 175, 93, 0.65);
+}
+
+
+/* =========================
+   ACTION MENU
+   ========================= */
+
+.actionMenu {
+  position: absolute;
+
+  top: calc(100% + 6px);
+  right: 0;
+
+  z-index: 100;
+
+  width: 130px;
+
+  padding: 6px;
+
+  background: #ffffff;
+
+  border: 1px solid #e8e8e8;
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.14),
+    0 4px 10px rgba(0, 0, 0, 0.06);
+
+  animation: actionMenuAppear 0.16s ease-out;
+}
+
+.actionMenu button {
+  width: 100%;
+
+  display: block;
+
+  padding: 10px 12px;
+
+  border: none;
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  text-align: left;
+
+  font-family: "Gotham", Arial, sans-serif;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  color: #252525;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.actionMenu button:hover {
+  background: #f4f4f4;
+}
+
+.actionMenu .deleteAction {
+  color: #df4354;
+}
+
+.actionMenu .deleteAction:hover {
+  background: #fff0f2;
+
+  color: #cc3042;
+}
+
+
+/* =========================
+   ACTION MENU ANIMATION
+   ========================= */
+
+@keyframes actionMenuAppear {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(-6px)
+      scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+
+/* =========================
+   PAGINATION
+   ========================= */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-top: 20px;
+
+  padding: 20px 2px 0;
+
+  color: #8d8d94;
+
+  font-family: "Gotham", Arial, sans-serif;
+
+  font-size: 10px;
+}
+
+.pageSize {
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+}
+
+.pageSize > span:first-child {
+  padding: 3px 6px;
+
+  border-radius: 3px;
+
+  background: #dedede;
+
+  color: #77777e;
+}
+
+.pageNavigation {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+}
+
+.pageNumber {
+  padding: 3px 6px;
+
+  border-radius: 3px;
+
+  background: #dedede;
+
+  color: #77777e;
+}
+
+.pageNavigation button {
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #e5e5e8;
+
+  border-radius: 6px;
+
+  background: #ffffff;
+
+  color: #77727f;
+
+  cursor: pointer;
+
+  font-family: "Gotham", Arial, sans-serif;
+
+  font-size: 13px;
+}
+
+.pageNavigation button:hover {
+  background: #f7f7f7;
+}
+
+.pageNavigation button:disabled {
+  opacity: 0.45;
+
+  cursor: default;
+}
+
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 1250px) {
+  .dashboard {
+    gap: 14px;
+  }
+
+  .sidebar {
+    width: 230px;
+    min-width: 230px;
+  }
+
+  .search {
+    width: 500px;
+  }
+
+  .profileInfo {
+    width: 190px;
+  }
+
+  .addButton {
+    width: 170px;
+  }
+}
+
+
+@media (max-width: 1000px) {
+  .dashboard {
+    padding: 20px;
+  }
+
+  .sidebar {
+    width: 200px;
+    min-width: 200px;
+  }
+
+  .topbar {
+    padding: 0 20px;
+  }
+
+  .search {
+    width: 350px;
+  }
+
+  .mainContent {
+    padding: 24px 20px;
+  }
+
+  .filters {
+    gap: 15px;
+  }
+
+  .filters button {
+    width: 95px;
+  }
+}
+
+
+@media (max-width: 750px) {
+  .sidebar {
+    width: 170px;
+    min-width: 170px;
+  }
+
+  .search {
+    width: 250px;
+  }
+
+  .profileInfo {
+    width: auto;
+  }
+
+  .profileInfo > div:last-child {
+    display: none;
+  }
+
+  .addButton {
+    width: 150px;
+  }
+}
+
+
+@media (max-width: 600px) {
+  .dashboard {
+    padding: 8px;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .topbar {
+    height: 60px;
+    min-height: 60px;
+
+    padding: 0 12px;
+  }
+
+  .search {
+    width: 100%;
+    max-width: 300px;
+
+    height: 38px;
+  }
+
+  .notification {
+    width: 38px;
+    height: 38px;
+  }
+
+  .profileInfo {
+    display: none;
+  }
+
+  .mainContent {
+    margin-top: 10px;
+
+    padding: 20px 14px;
+  }
+
+  .pageHeader h1 {
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .addButton {
+    width: 135px;
+    height: 40px;
+
+    font-size: 9px;
+  }
+
+  .filters {
+    gap: 8px;
+
+    margin-bottom: 25px;
+  }
+
+  .filters button {
+    width: 85px;
+    height: 36px;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+  }
+
+  .tableWrapper table {
+    min-width: 850px;
+  }
+}
+/* =========================
+   FINAL USER ROW ALIGNMENT
+   ========================= */
+
+.tableWrapper tbody tr.userRow {
+  height: 50px;
+}
+
+.tableWrapper tbody tr.userRow > td {
+  height: 50px;
+  padding-top: 0;
+  padding-bottom: 0;
+  vertical-align: middle;
+}
+
+
+/* =========================
+   ROLE CELL
+   ========================= */
+
+.roleCell {
+  height: 50px;
+
+  padding: 0 14px !important;
+
+  vertical-align: middle !important;
+}
+
+.roleWrapper {
+  width: 100%;
+  height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+
+/* =========================
+   ACTION CELL
+   ========================= */
+
+.actionCell {
+  width: 100% !important;
+  min-width: 0 !important;
+
+  height: 50px !important;
+
+  padding: 0 8px !important;
+
+  vertical-align: middle !important;
+}
+
+.actionMenuWrapper {
+  width: 100%;
+  height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* =========================
+   THREE DOTS
+   ========================= */
+
+.moreButton {
+  flex-shrink: 0;
+
+  width: 36px;
+  height: 36px;
+
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+
+  letter-spacing: 2px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  opacity: 0;
+
+  transform: translateY(0);
+
+  transition:
+    opacity 0.2s ease,
+    background 0.2s ease;
+}
+
+.userRow:hover .moreButton,
+.moreButton:focus {
+  opacity: 1;
+}
+
+.userRow:hover .moreButton {
+  background: rgba(26, 175, 93, 0.45);
+}
+
+.moreButton:hover {
+  background: rgba(26, 175, 93, 0.65);
+}
+/* =========================
+   USER DETAILS MODAL
+   ========================= */
+
+.detailsOverlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(20, 20, 25, 0.35);
+
+  backdrop-filter: blur(3px);
+
+  animation: detailsOverlayAppear 0.2s ease-out;
+}
+
+.detailsModal {
+  position: relative;
+
+  width: 440px;
+  max-width: 100%;
+
+  padding: 32px;
+
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.18);
+
+  box-sizing: border-box;
+
+  animation: detailsModalAppear 0.2s ease-out;
+}
+
+.detailsClose {
+  position: absolute;
+
+  top: 14px;
+  right: 16px;
+
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #77777f;
+
+  font-size: 24px;
+
+  cursor: pointer;
+}
+
+.detailsClose:hover {
+  background: #f3f3f3;
+
+  color: #222;
+}
+
+.detailsModal h2 {
+  margin: 0 0 24px;
+
+  color: #202025;
+
+  font-family: "Gotham", Arial, sans-serif;
+
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.detailsAvatar {
+  width: 64px;
+  height: 64px;
+
+  margin: 0 auto 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+
+  color: #ffffff;
+
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.detailsName {
+  margin-bottom: 10px;
+
+  color: #202025;
+
+  font-size: 18px;
+  font-weight: 700;
+
+  text-align: center;
+}
+
+.detailsRole {
+  margin-bottom: 28px;
+
+  text-align: center;
+}
+
+.detailsGrid {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 12px;
+}
+
+.detailsItem {
+  min-width: 0;
+
+  padding: 14px;
+
+  border-radius: 10px;
+
+  background: #f7f7f7;
+}
+
+.detailsItem span {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #8a8a92;
+
+  font-size: 10px;
+  font-weight: 500;
+
+  text-transform: uppercase;
+}
+
+.detailsItem strong {
+  display: block;
+
+  overflow: hidden;
+
+  color: #33333a;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  text-overflow: ellipsis;
+}
+
+.detailsEditButton {
+  width: 100%;
+  height: 42px;
+
+  margin-top: 24px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: linear-gradient(
+    135deg,
+    #02a9a2 0%,
+    #1aaf5d 80.57%
+  );
+
+  color: #ffffff;
+
+  font-family: "Gotham", Arial, sans-serif;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.detailsEditButton:hover {
+  opacity: 0.9;
+}
+
+.detailsEditButton:active {
+  transform: scale(0.98);
+}
+
+
+/* =========================
+   DETAILS ANIMATIONS
+   ========================= */
+
+@keyframes detailsOverlayAppear {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes detailsModalAppear {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* =========================
+   DETAILS RESPONSIVE
+   ========================= */
+
+@media (max-width: 500px) {
+  .detailsModal {
+    padding: 26px 20px;
+  }
+
+  .detailsGrid {
+    grid-template-columns: 1fr;
+  }
+}
