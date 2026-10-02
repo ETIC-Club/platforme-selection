@@ -1,17 +1,17 @@
 
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import styles from "./login.module.css";
 
 export default function LoginPage() {
-  const router = useRouter();
   const buttonRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCredentialResponse = useCallback(
     async (response: { credential: string }) => {
+      setIsLoading(true);
       try {
         const res = await fetch("/api/auth/google", {
           method: "POST",
@@ -24,18 +24,20 @@ export default function LoginPage() {
         });
 
         if (res.ok) {
-          router.push("/events");
-          router.refresh();
+          // Hard navigation ensures HttpOnly session cookie is committed and sent in headers
+          window.location.href = "/events";
         } else {
+          setIsLoading(false);
           const data = await res.json().catch(() => null);
           alert(data?.error || "Échec de la connexion");
         }
       } catch (err) {
+        setIsLoading(false);
         console.error("Login request error:", err);
         alert("Erreur de connexion au serveur");
       }
     },
-    [router]
+    []
   );
 
   useEffect(() => {
@@ -62,6 +64,7 @@ export default function LoginPage() {
         text: "continue_with",
         shape: "rectangular",
         width: 400,
+        logo_alignment: "left",
       });
     };
 
@@ -153,14 +156,15 @@ export default function LoginPage() {
             WELCOME TO
           </span>
 
-          <span className={styles.decision}>
-            DecisionDeck
+          <span className={styles.platformSelection}>
+            ETIC PLATFORM
+            <br />
+            SELECTION
           </span>
         </h1>
 
-        {/* Custom-looking Google button */}
+        {/* Google Sign-In Button */}
         <div className={styles.googleWrapper}>
-
           <div className={styles.customGoogleButton}>
             <Image
               src="/google-icon.svg"
@@ -169,16 +173,20 @@ export default function LoginPage() {
               height={24}
               className={styles.googleIcon}
             />
-
             <span>Continue with Google</span>
           </div>
 
-          {/* REAL Google button ON TOP */}
           <div
             ref={buttonRef}
             className={styles.realGoogleButton}
           />
 
+          {isLoading && (
+            <div className={styles.loadingOverlay}>
+              <div className={styles.spinner} />
+              <span>Connexion en cours...</span>
+            </div>
+          )}
         </div>
 
         <p className={styles.hint}>
