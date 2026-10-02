@@ -70,7 +70,7 @@ model Candidate {
   email        String?
   telephone    String?
   extraData    Json?           @map("extra_data")
-  finalStatus  CandidateStatus @default(en_attente) @map("final_status")
+  finalStatus  CandidateStatus? @map("final_status")
   createdAt    DateTime        @default(now()) @map("created_at")
   assignments  Assignment[]
   event        Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)

@@ -1,0 +1,272 @@
+/*
+  This is a CSS Module: because the filename ends in .module.css, Next.js
+  automatically scopes every class name in this file so it can never
+  clash with a class of the same name in another file. When you write
+  className={styles.row} in the component, Next.js swaps it at build time
+  for something like "CandidateList_row__a1b2c" behind the scenes - you
+  never need to think about that part, just use styles.whatever.
+*/
+
+.controls {
+  margin-bottom: 24px;
+}
+
+.controls input {
+  width: 100%;
+  max-width: 400px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 999px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  font-size: 14px;
+  outline: none;
+}
+
+.controls select {
+  padding: 10px 20px;
+  border: none;
+  background-color: #ffffff;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: #e4e4e4;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.identity {
+  flex: 0 0 240px;
+  min-width: 0;
+}
+
+.identity strong {
+  display: block;
+  font-size: 16px;
+  color: #111;
+  margin-bottom: 2px;
+}
+
+.identity div {
+  font-size: 12px;
+  color: #999;
+  line-height: 1.4;
+}
+
+.progressAndCommentsWrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.progressBar {
+  width: 100%;
+  max-width: 250px;
+  position: relative;
+  height: 14px;
+  border-radius: 99px;
+  background: #DCF5F2; /* Light teal background */
+  overflow: hidden;
+}
+
+.progressFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: #00A99D; /* ETIC Teal */
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  transition: width 0.3s ease;
+  min-width: 28px;
+}
+
+.progressTextFill {
+  font-size: 10px;
+  color: white;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.progressTextEmpty {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+  color: #00A99D;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.commentsTextUnderBar {
+  font-size: 11px;
+  color: #6B7280; /* Gray 500 */
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.commentsDecisionPage {
+  flex: 1;
+  font-size: 13px;
+  color: #6B7280; /* Gray 500 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.decisionDropdown {
+  flex: 0 0 150px;
+}
+
+.badge {
+  flex: 0 0 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.badgeAccepte {
+  background: #ECFDF5;
+  color: #10B981; /* Emerald 500 */
+}
+
+.badgeRefuse {
+  background: #FEF2F2;
+  color: #EF4444; /* Red 500 */
+}
+
+.badgePending {
+  background: #f6f7f9;
+  color: #8a8a8a;
+}
+
+.arrowButton {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #02A9A2; /* ETIC Teal */
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(2, 169, 162, 0.4);
+}
+
+.arrowButton:hover {
+  background: #028b85;
+}
+
+.showMoreButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 24px auto 0;
+  padding: 12px 28px;
+  border-radius: 99px;
+  border: 1px solid #E5E7EB;
+  background: white;
+  color: #4B5563;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.showMoreButton:hover:not(:disabled) {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+  color: #111827;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+}
+
+.showMoreButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.showMoreButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #F3F4F6;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 32px;
+  color: #8a8a8a;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .row {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  .identity {
+    flex: 1 1 calc(100% - 76px); /* account for avatar + gap */
+  }
+  
+  .progressWrap {
+    flex: 1 1 100%;
+  }
+  
+  .comments {
+    flex: 1 1 100%;
+  }
+  
+  .decisionSelect, .badge {
+    flex: 1 1 calc(100% - 56px); /* account for arrow button + gap */
+  }
+  
+  .arrowButton {
+    margin-left: auto;
+  }
+}

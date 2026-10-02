@@ -1,0 +1,385 @@
+.container {
+  min-height: 100vh;
+  background-color: #f7f7f7;
+  display: flex;
+}
+
+.appWrapper {
+  width: 100%;
+  height: 100vh;
+  background-color: #ffffff; /* White overall app background */
+  display: flex;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Sidebar styling */
+.sidebar {
+  width: 260px;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 0;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -260px;
+  z-index: 100;
+  transition: left 0.3s ease;
+}
+
+.sidebarOpen {
+  left: 0;
+}
+
+@media (min-width: 1024px) {
+  .sidebar {
+    position: static;
+    left: auto;
+    transition: none;
+  }
+}
+
+.sidebarOverlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 90;
+}
+
+@media (min-width: 1024px) {
+  .sidebarOverlay {
+    display: none;
+  }
+}
+
+.logoArea {
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.logoWrapper {
+  position: relative;
+  width: 44px;
+  height: 44px;
+}
+
+.logoMain {
+  position: absolute;
+  inset: 0;
+  background-color: #02A9A2;
+  color: white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(2, 169, 162, 0.4);
+}
+
+.logoDot {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 6px;
+  z-index: 1;
+}
+
+.logoDotOrange { top: -4px; left: -4px; background-color: #EC9E00; }
+.logoDotRed { bottom: -4px; left: -4px; background-color: #C1333F; }
+.logoDotGreen { top: -4px; right: -4px; background-color: #1AAF5D; }
+.logoDotYellow { bottom: -4px; right: -4px; background-color: #FFCA00; }
+
+.logoText {
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+}
+
+.eventTitle {
+  font-weight: 800;
+  font-size: 14px;
+  padding: 0 24px;
+  margin-bottom: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.backArrow {
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.menuSection {
+  flex: 1;
+}
+
+.menuLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a0a0a0;
+  padding: 0 24px;
+  margin-bottom: 12px;
+  letter-spacing: 0.05em;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  padding: 12px 24px;
+  color: #666;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  position: relative;
+  cursor: pointer;
+}
+
+.navItem:hover {
+  background-color: #f9f9f9;
+}
+
+.navItemActive {
+  color: #272421;
+  background-color: #f0fbfb;
+}
+
+.activeIndicator {
+  position: absolute;
+  left: 0;
+  top: 10%;
+  bottom: 10%;
+  width: 4px;
+  background-color: #02A9A2;
+  border-radius: 0 4px 4px 0;
+}
+
+.navIcon {
+  margin-right: 12px;
+  font-size: 16px;
+  opacity: 0.5;
+}
+
+.navItemActive .navIcon {
+  opacity: 1;
+}
+
+.dropdownArrow {
+  margin-left: auto;
+  font-size: 10px;
+  color: #666;
+  transition: transform 0.2s ease;
+}
+
+.subMenu {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff; /* Keep it white like the sidebar */
+}
+
+.subMenuItem {
+  padding: 10px 24px 10px 52px;
+  font-size: 13px;
+  color: #8a8a8a;
+  text-decoration: none;
+  font-weight: 500;
+  display: block;
+  transition: all 0.2s ease;
+}
+
+.subMenuItem:hover {
+  color: #02A9A2;
+  background-color: #f0fbfb;
+}
+
+.subMenuItemActive {
+  color: #02A9A2;
+  background-color: #f0fbfb;
+  font-weight: 700;
+  border-right: 3px solid #02A9A2;
+}
+
+.extraSection {
+  margin-top: auto;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.header {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background-color: #ffffff;
+}
+
+@media (min-width: 768px) {
+  .header {
+    height: 80px;
+    padding: 0 40px;
+  }
+}
+
+.mobileHeaderLeft {
+  display: flex;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .mobileHeaderLeft {
+    display: none;
+  }
+}
+
+.menuBtn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  margin-right: 16px;
+  color: #333;
+}
+
+.searchBar {
+  display: none;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+@media (min-width: 768px) {
+  .searchBar {
+    display: flex;
+  }
+}
+
+.searchIcon {
+  color: #999;
+  font-size: 14px;
+  margin-right: 10px;
+}
+
+.searchInput {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+@media (min-width: 768px) {
+  .headerRight {
+    gap: 24px;
+    margin-left: 0;
+  }
+}
+
+.bellBtn {
+  background: #ffffff;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+@media (min-width: 768px) {
+  .bellBtn {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  padding: 6px 12px 6px 6px;
+  border-radius: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+@media (min-width: 768px) {
+  .profile {
+    padding: 8px 16px 8px 8px;
+  }
+}
+
+.profileAvatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #a0a0a0;
+}
+
+@media (min-width: 768px) {
+  .profileAvatar {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+.profileInfo {
+  display: none;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+  .profileInfo {
+    display: flex;
+  }
+}
+
+.profileName {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+}
+
+.profileEmail {
+  font-size: 11px;
+  color: #888;
+}
+
+.pageContent {
+  flex: 1;
+  padding: 20px 24px;
+  overflow-y: auto;
+  background-color: #f6f7f9; /* Light grey inner container */
+  border-radius: 24px 0 0 0; /* Match mockup rounded inner corner */
+  margin-top: 10px;
+}
+
+@media (min-width: 768px) {
+  .pageContent {
+    padding: 20px 40px;
+  }
+}
