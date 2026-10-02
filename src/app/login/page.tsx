@@ -40,23 +40,43 @@ export default function LoginPage() {
     []
   );
 
+  const isInitializedRef = useRef(false);
+  const handleCredentialResponseRef = useRef(handleCredentialResponse);
+  handleCredentialResponseRef.current = handleCredentialResponse;
+
+  const handleWrapperClick = () => {
+    if (isLoading) return;
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.prompt();
+    }
+  };
+
   useEffect(() => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
-    const initializeGoogleSignIn = () => {
+    if (!clientId) {
+      console.warn(
+        "NEXT_PUBLIC_GOOGLE_CLIENT_ID is not set in .env. Google login requires this key."
+      );
+      return;
+    }
+
+    const renderGoogleButton = () => {
       if (!buttonRef.current || !window.google?.accounts?.id) return;
 
-      if (!clientId) {
-        console.warn(
-          "NEXT_PUBLIC_GOOGLE_CLIENT_ID is not set in .env. Google login requires this key."
-        );
-        return;
+      // Ensure google.accounts.id.initialize is called strictly once
+      if (!isInitializedRef.current) {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: (response: { credential: string }) => {
+            handleCredentialResponseRef.current(response);
+          },
+        });
+        isInitializedRef.current = true;
       }
 
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: handleCredentialResponse,
-      });
+      // Clear any duplicate child nodes/iframes before rendering
+      buttonRef.current.innerHTML = "";
 
       window.google.accounts.id.renderButton(buttonRef.current, {
         theme: "outline",
@@ -69,22 +89,30 @@ export default function LoginPage() {
     };
 
     if (window.google?.accounts?.id) {
-      initializeGoogleSignIn();
+      renderGoogleButton();
       return;
     }
 
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.onload = initializeGoogleSignIn;
-    document.body.appendChild(script);
+    const SCRIPT_ID = "google-gsi-client-script";
+    let script = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
+
+    if (!script) {
+      script = document.createElement("script");
+      script.id = SCRIPT_ID;
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.onload = renderGoogleButton;
+      document.body.appendChild(script);
+    } else {
+      script.addEventListener("load", renderGoogleButton);
+    }
 
     return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
+      if (script) {
+        script.removeEventListener("load", renderGoogleButton);
       }
     };
-  }, [handleCredentialResponse]);
+  }, []);
 
   return (
     <main className={styles.page}>
@@ -164,7 +192,10 @@ export default function LoginPage() {
         </h1>
 
         {/* Google Sign-In Button */}
-        <div className={styles.googleWrapper}>
+        <div
+          className={styles.googleWrapper}
+          onClick={handleWrapperClick}
+        >
           <div className={styles.customGoogleButton}>
             <Image
               src="/google-icon.svg"
