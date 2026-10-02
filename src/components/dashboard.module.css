@@ -115,6 +115,56 @@
   color: var(--color-primary-teal);
 }
 
+/* Submenu Styles */
+.subMenuContainer {
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  margin: 4px 16px 12px 26px;
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.subMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-primary);
+  font-size: 14px;
+  font-weight: 500;
+  color: #1F2937;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.subMenuItem:hover {
+  color: var(--color-primary-teal);
+}
+
+.subMenuItem:hover .subMenuDot {
+  background-color: var(--color-primary-teal);
+}
+
+.subMenuItemActive {
+  font-weight: 600;
+  color: #111827;
+}
+
+.subMenuDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #E5E7EB;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.subMenuDotActive {
+  background-color: var(--color-primary-teal);
+}
+
 .badgeRole {
   margin-left: auto;
   font-size: 9px;
@@ -879,5 +929,653 @@
   background-color: rgba(107, 114, 128, 0.12);
   color: #4B5563;
 }
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
 
+/* ---------------------------------------------------------
+   TABLET / SMALL DESKTOP
+--------------------------------------------------------- */
 
+@media (max-width: 1200px) {
+  .dashboardWrapper {
+    padding: 20px;
+    gap: 18px;
+  }
+
+  .sidebar {
+    width: 230px;
+    min-width: 230px;
+  }
+
+  .mainCard {
+    padding: 24px;
+  }
+
+  .eventCard {
+    gap: 14px;
+    padding: 16px 20px;
+  }
+
+  .eventThumbnail {
+    width: 68px;
+    height: 68px;
+  }
+
+  .eventTitle {
+    font-size: 16px;
+  }
+
+  .cardProgress {
+    min-width: 150px;
+  }
+
+  .cardRight {
+    gap: 14px;
+  }
+
+  .eventBannerHeader {
+    gap: 20px;
+  }
+
+  .bannerStatsGrid {
+    gap: 12px;
+  }
+}
+
+/* ---------------------------------------------------------
+   TABLET
+--------------------------------------------------------- */
+
+@media (max-width: 950px) {
+  .dashboardWrapper {
+    padding: 15px;
+    gap: 15px;
+  }
+
+  .sidebar {
+    width: 210px;
+    min-width: 210px;
+  }
+
+  .logoArea {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .sectionHeader,
+  .extraHeader {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .navItem {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .mainCard {
+    padding: 20px;
+  }
+
+  .topbar {
+    padding: 0 15px;
+  }
+
+  .profileMeta {
+    display: none;
+  }
+
+  .eventCard {
+    flex-wrap: wrap;
+  }
+
+  .cardLeft {
+    min-width: 220px;
+  }
+
+  .cardProgress {
+    min-width: 180px;
+  }
+
+  .cardRight {
+    margin-left: auto;
+  }
+
+  .bannerStatsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .candidatureHeaderRow,
+  .candidatureCard {
+    grid-template-columns: 2fr 1.1fr 1fr 1fr 100px;
+  }
+
+  .candidatureCard {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+}
+
+/* ---------------------------------------------------------
+   MOBILE
+--------------------------------------------------------- */
+
+@media (max-width: 650px) {
+  .dashboardWrapper {
+    display: block;
+
+    width: 100%;
+    height: 100dvh;
+    max-height: none;
+
+    padding: 10px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    box-sizing: border-box;
+  }
+
+  /* -------------------------------------------------------
+     SIDEBAR
+     On mobile the sidebar becomes the top navigation.
+  ------------------------------------------------------- */
+
+  .sidebar {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    max-height: none;
+
+    margin: 0 0 10px 0;
+    padding: 14px;
+
+    border-radius: 14px;
+
+    overflow: visible;
+    box-sizing: border-box;
+  }
+
+  .logoArea {
+    padding: 0 4px 12px 4px;
+    gap: 10px;
+  }
+
+  .logoArea img {
+    width: 36px !important;
+    height: 32px !important;
+  }
+
+  .brandTitle {
+    font-size: 11px;
+    letter-spacing: 0.3px;
+  }
+
+  .navSection {
+    width: 100%;
+  }
+
+  .sectionHeader {
+    padding: 8px 4px 7px 4px;
+    font-size: 9px;
+  }
+
+  .navList {
+    display: flex;
+    flex-direction: row;
+
+    width: 100%;
+
+    gap: 6px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    scrollbar-width: none;
+  }
+
+  .navList::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navList li {
+    flex: 0 0 auto;
+  }
+
+  .navItem {
+    width: auto !important;
+    min-height: 38px;
+
+    padding: 0 12px;
+
+    gap: 7px;
+
+    border-radius: 9px;
+
+    font-size: 10px;
+
+    white-space: nowrap;
+  }
+
+  .navItem svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .activeIndicator {
+    left: 0;
+    top: auto;
+    bottom: 0;
+
+    width: 100%;
+    height: 3px;
+
+    transform: none;
+
+    border-radius: 3px 3px 0 0;
+  }
+
+  .badgeRole {
+    font-size: 7px;
+    padding: 2px 5px;
+  }
+
+  .extraHeader {
+    display: none;
+  }
+
+  /* -------------------------------------------------------
+     CONTENT
+  ------------------------------------------------------- */
+
+  .contentWrapper {
+    width: 100%;
+    height: auto;
+    max-height: none;
+
+    gap: 10px;
+
+    overflow: visible;
+  }
+
+  /* -------------------------------------------------------
+     TOP BAR
+  ------------------------------------------------------- */
+
+  .topbar {
+    width: 100%;
+    height: auto;
+    min-height: 62px;
+
+    padding: 10px;
+
+    gap: 8px;
+
+    border-radius: 14px;
+
+    box-sizing: border-box;
+  }
+
+  .searchContainer {
+    height: 40px;
+    min-width: 0;
+    max-width: none;
+
+    padding: 0 13px;
+
+    gap: 8px;
+  }
+
+  .searchInput {
+    min-width: 0;
+    font-size: 12px;
+  }
+
+  .topbarActions {
+    gap: 7px;
+    flex-shrink: 0;
+  }
+
+  .iconButton {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .profileSection {
+    gap: 0;
+    padding: 4px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .profileMeta {
+    display: none;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .roleSelector {
+    display: none;
+  }
+
+  /* -------------------------------------------------------
+     MAIN CONTENT
+  ------------------------------------------------------- */
+
+  .mainContainer {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    min-width: 0;
+  }
+
+  .mainCard {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+
+    padding: 16px;
+
+    box-sizing: border-box;
+
+    overflow-x: hidden;
+    overflow-y: visible;
+
+    border-radius: 14px;
+  }
+
+  /* -------------------------------------------------------
+     EVENTS HEADER
+  ------------------------------------------------------- */
+
+  .mainHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .pageTitle {
+    font-size: 21px;
+  }
+
+  .addEventBtn {
+    width: 100%;
+    justify-content: center;
+
+    padding: 10px 14px;
+
+    font-size: 11px;
+  }
+
+  /* -------------------------------------------------------
+     EVENT CARDS
+  ------------------------------------------------------- */
+
+  .eventsList {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .eventCard {
+    width: 100%;
+    box-sizing: border-box;
+
+    flex-direction: column;
+    align-items: stretch;
+
+    padding: 16px;
+
+    gap: 14px;
+  }
+
+  .cardLeft {
+    width: 100%;
+    min-width: 0;
+
+    gap: 12px;
+  }
+
+  .eventThumbnail {
+    width: 58px;
+    height: 58px;
+
+    font-size: 16px;
+
+    flex-shrink: 0;
+  }
+
+  .eventInfo {
+    min-width: 0;
+  }
+
+  .eventTitle {
+    font-size: 15px;
+
+    overflow-wrap: anywhere;
+  }
+
+  .eventSubtitle {
+    font-size: 11px;
+
+    overflow-wrap: anywhere;
+  }
+
+  .eventQuota {
+    font-size: 11px;
+  }
+
+  .cardProgress {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .cardRight {
+    width: 100%;
+
+    display: flex;
+    justify-content: space-between;
+
+    gap: 10px;
+  }
+
+  .deadlineContainer {
+    min-width: 0;
+    font-size: 11px;
+  }
+
+  .deadlineContainer span {
+    overflow-wrap: anywhere;
+  }
+
+  /* -------------------------------------------------------
+     EVENT DETAILS / INSIDE EVENT
+  ------------------------------------------------------- */
+
+  .eventContextSection {
+    padding: 4px 0 12px 0;
+  }
+
+  .eventContextTitle {
+    font-size: 14px;
+  }
+
+  .backLink {
+    font-size: 10px;
+  }
+
+  .eventBannerHeader {
+    width: 100%;
+    box-sizing: border-box;
+
+    flex-direction: column;
+    align-items: flex-start;
+
+    padding: 18px;
+
+    gap: 14px;
+  }
+
+  .bannerTitleArea {
+    width: 100%;
+  }
+
+  .bannerEventName {
+    font-size: 20px;
+    overflow-wrap: anywhere;
+  }
+
+  .bannerSubtitle {
+    font-size: 12px;
+  }
+
+  .bannerStatsGrid {
+    width: 100%;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 10px;
+  }
+
+  .statCard {
+    padding: 14px;
+    min-width: 0;
+  }
+
+  .statLabel {
+    font-size: 10px;
+  }
+
+  .statValue {
+    font-size: 21px;
+  }
+
+  .statProgress {
+    font-size: 10px;
+  }
+
+  /* -------------------------------------------------------
+     FILTERS
+  ------------------------------------------------------- */
+
+  .filterPillsRow {
+    width: 100%;
+
+    flex-wrap: wrap;
+
+    gap: 7px;
+  }
+
+  .filterPill {
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+
+  /* -------------------------------------------------------
+     CANDIDATURES
+  ------------------------------------------------------- */
+
+  .candidatureHeaderRow {
+    display: none;
+  }
+
+  .candidatureCard {
+    width: 100%;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 10px;
+
+    padding: 14px 16px;
+  }
+
+  .candProfile {
+    width: 100%;
+  }
+
+  .candName {
+    font-size: 14px;
+  }
+
+  .candEmail {
+    font-size: 11px;
+    overflow-wrap: anywhere;
+  }
+
+  .candTag {
+    font-size: 12px;
+  }
+
+  .candDecisionSelect {
+    width: 100%;
+  }
+
+  .viewStoryBtn {
+    width: 100%;
+  }
+}
+
+/* ---------------------------------------------------------
+   VERY SMALL PHONES
+--------------------------------------------------------- */
+
+@media (max-width: 400px) {
+  .dashboardWrapper {
+    padding: 7px;
+  }
+
+  .sidebar {
+    padding: 11px;
+  }
+
+  .mainCard {
+    padding: 13px;
+  }
+
+  .topbar {
+    padding: 8px;
+  }
+
+  .searchContainer {
+    padding: 0 10px;
+  }
+
+  .searchInput {
+    font-size: 11px;
+  }
+
+  .iconButton {
+    width: 36px;
+    height: 36px;
+  }
+
+  .avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .eventCard {
+    padding: 13px;
+  }
+
+  .eventThumbnail {
+    width: 52px;
+    height: 52px;
+  }
+
+  .eventTitle {
+    font-size: 14px;
+  }
+
+  .bannerStatsGrid {
+    grid-template-columns: 1fr;
+  }
+}
