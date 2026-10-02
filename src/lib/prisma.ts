@@ -37,3 +37,7 @@ function getPrismaClient(): PrismaClient {
 
 export const prisma = getPrismaClient();
 
+export function resetPrismaClient(): PrismaClient {
+  globalForPrisma.prisma = undefined;
+  return getPrismaClient();
+}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { useAuth } from "@/context/AuthContext";
 import styles from "../admin/history/history.module.css";
 
 type HistoryEvent = {
@@ -69,6 +70,7 @@ function HistoryContent({
 }: {
   searchQuery: string;
 }) {
+  const { user } = useAuth();
   const [events, setEvents] = useState<HistoryEvent[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
@@ -287,9 +289,13 @@ function HistoryContent({
    */
 
   const openCommentModal = async (
-    event: HistoryEvent
+    event?: HistoryEvent | null
   ) => {
-    setSelectedEvent(event);
+    const targetEvent = event || selectedEvent;
+    if (!targetEvent) return;
+
+    setIsDetailsModalOpen(false);
+    setSelectedEvent(targetEvent);
     setIsCommentModalOpen(true);
 
     setComments([]);
@@ -300,28 +306,28 @@ function HistoryContent({
 
     try {
       const response = await fetch(
-        `/api/event-comments?eventId=${event.id}`
+        `/api/event-comments?eventId=${targetEvent.id}`
       );
 
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
 
-      if (!response.ok) {
-        throw new Error(
-          data.error ||
+      if (!response.ok || !data) {
+        setCommentError(
+          (data && (data.error || data.details)) ||
             "Unable to load comments."
         );
+        setComments([]);
+        return;
       }
 
-      setComments(data);
+      setComments(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error(
-        "Failed to load comments:",
-        error
-      );
-
       setCommentError(
-        "Unable to load comments."
+        error instanceof Error
+          ? error.message
+          : "Unable to load comments."
       );
+      setComments([]);
     } finally {
       setIsLoadingComments(false);
     }
@@ -369,17 +375,23 @@ function HistoryContent({
           body: JSON.stringify({
             eventId: selectedEvent.id,
             comment: trimmedComment,
+            userEmail: user?.email,
+            userId:
+              user?.id && !isNaN(Number(user.id))
+                ? Number(user.id)
+                : undefined,
           }),
         }
       );
 
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
 
-      if (!response.ok) {
-        throw new Error(
-          data.error ||
+      if (!response.ok || !data || !data.comment) {
+        setCommentError(
+          (data && (data.details || data.error)) ||
             "Unable to add comment."
         );
+        return;
       }
 
       setComments((currentComments) => [
@@ -388,18 +400,21 @@ function HistoryContent({
           createdAt:
             data.comment.createdAt ||
             new Date().toISOString(),
-          user: null,
+          user:
+            data.comment.user ||
+            (user
+              ? {
+                  id: 0,
+                  fullName: user.name,
+                  email: user.email,
+                }
+              : null),
         },
         ...currentComments,
       ]);
 
       setNewComment("");
     } catch (error) {
-      console.error(
-        "Failed to submit comment:",
-        error
-      );
-
       setCommentError(
         error instanceof Error
           ? error.message
@@ -1563,14 +1578,11 @@ function HistoryContent({
                   styles.detailsCommentButton
                 }
                 onClick={() => {
-                  const event =
-                    selectedEvent;
-
-                  closeDetailsModal();
-
-                  openCommentModal(
-                    event
-                  );
+                  const eventToOpen = selectedEvent;
+                  setIsDetailsModalOpen(false);
+                  if (eventToOpen) {
+                    openCommentModal(eventToOpen);
+                  }
                 }}
               >
                 View comments

@@ -18,19 +18,28 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: eventIdParam } = await params
-  const eventId = Number(eventIdParam)
+  try {
+    const { id: eventIdParam } = await params
+    const eventId = Number(eventIdParam)
 
-  // `request.url` includes everything after the `?` — searchParams reads
-  // those query-string values.
-  const { searchParams } = new URL(request.url)
+    if (!eventId || isNaN(eventId)) {
+      return NextResponse.json({ items: [], nextCursor: null, totalMatching: 0 })
+    }
 
-  const status = (searchParams.get('status') ?? 'pending') as CandidateStatusFilter
-  const search = searchParams.get('search') ?? undefined
-  const cursorParam = searchParams.get('cursor')
-  const cursor = cursorParam ? Number(cursorParam) : null
+    // `request.url` includes everything after the `?` — searchParams reads
+    // those query-string values.
+    const { searchParams } = new URL(request.url)
 
-  const page = await getCandidates({ eventId, status, search, cursor })
+    const status = (searchParams.get('status') ?? 'pending') as CandidateStatusFilter
+    const search = searchParams.get('search') ?? undefined
+    const cursorParam = searchParams.get('cursor')
+    const cursor = cursorParam ? Number(cursorParam) : null
 
-  return NextResponse.json(page)
+    const page = await getCandidates({ eventId, status, search, cursor })
+
+    return NextResponse.json(page)
+  } catch (err) {
+    console.error("GET candidates-paginated error:", err)
+    return NextResponse.json({ items: [], nextCursor: null, totalMatching: 0 })
+  }
 }

@@ -41,7 +41,10 @@ export async function GET(request: Request) {
 
     const events = await prisma.event.findMany({
       where: {
-        status: "termine",
+        OR: [
+          { status: "termine" },
+          { closedAt: { not: null } },
+        ],
 
         ...(startDate || endDate
           ? {

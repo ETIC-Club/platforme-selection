@@ -93,12 +93,18 @@ export function CandidateList({
     if (searchValue) url.searchParams.set('search', searchValue)
     if (!opts.reset && nextCursor) url.searchParams.set('cursor', String(nextCursor))
 
-    const res = await fetch(url.toString())
-    const page = await res.json()
+    try {
+      const res = await fetch(url.toString())
+      if (!res.ok) return
+      const page = await res.json().catch(() => null)
+      if (!page || !Array.isArray(page.items)) return
 
-    setItems((prev) => (opts.reset ? page.items : [...prev, ...page.items]))
-    setNextCursor(page.nextCursor)
-    setTotal(page.totalMatching)
+      setItems((prev) => (opts.reset ? page.items : [...prev, ...page.items]))
+      setNextCursor(page.nextCursor)
+      setTotal(page.totalMatching)
+    } catch (err) {
+      console.warn("Failed to fetch candidates page:", err)
+    }
   }
 
   function handleStatusSwitch(value: CandidateStatusFilter) {
