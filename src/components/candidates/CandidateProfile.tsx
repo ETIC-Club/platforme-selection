@@ -135,7 +135,7 @@ export function CandidateProfile({ candidate, eventId }: Props) {
                 <span>{candidate.telephone}</span>
               </div>
             )}
-            {(extra['Location'] || extra['location'] || extra['Ville']) && (
+            {Boolean(extra['Location'] || extra['location'] || extra['Ville']) && (
               <div className={styles.metaItem}>
                 <MapPin size={16} />
                 <span>{String(extra['Location'] || extra['location'] || extra['Ville'])}</span>

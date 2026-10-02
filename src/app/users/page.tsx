@@ -219,7 +219,7 @@ export default function UsersPage() {
                 <thead>
                   <tr>
                     <th>Nom complet</th>
-                    <th>joined in</th>
+                    <th>Email</th>
                     <th>events selected</th>
                     <th>candidates selected</th>
                     <th>Role</th>
@@ -236,7 +236,7 @@ export default function UsersPage() {
                       >
                         <td>{user.name}</td>
 
-                        <td>{user.joined}</td>
+                        <td>{user.email}</td>
 
                         <td>{user.roleType === "admin" ? "-" : user.events}</td>
 

@@ -1,242 +1,58 @@
-// "use client";
-
-// import { useEffect, useRef } from "react";
-// import { useRouter } from "next/navigation";
-// import Image from "next/image";
-// import styles from "./login.module.css";
-
-// declare global {
-//   interface Window {
-//     google: any;
-//   }
-// }
-
-// export default function LoginPage() {
-//   const router = useRouter();
-//   const buttonRef = useRef<HTMLDivElement>(null);
-
-//   async function handleCredentialResponse(response: {
-//     credential: string;
-//   }) {
-//     const res = await fetch("/api/auth/google", {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({
-//         credential: response.credential,
-//       }),
-//     });
-
-//     if (res.ok) {
-//       router.push("/events");
-//       router.refresh();
-//     } else {
-//       alert("Échec de la connexion");
-//     }
-//   }
-
-//   useEffect(() => {
-//     const script = document.createElement("script");
-
-//     script.src = "https://accounts.google.com/gsi/client";
-//     script.async = true;
-
-//     script.onload = () => {
-//       if (!buttonRef.current) return;
-
-//       window.google.accounts.id.initialize({
-//         client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-//         callback: handleCredentialResponse,
-//       });
-
-//       window.google.accounts.id.renderButton(
-//         buttonRef.current,
-//         {
-//           theme: "outline",
-//           size: "large",
-//           text: "continue_with",
-//           shape: "pill",
-//           width: 330,
-//         }
-//       );
-//     };
-
-//     document.body.appendChild(script);
-
-//     return () => {
-//       document.body.removeChild(script);
-//     };
-//   }, []);
-
-//   return (
-//     <main className={styles.page}>
-//       {/* Top-right decorative line */}
-//       <Image
-//         src="/Layer 2.svg"
-//         alt=""
-//         width={100}
-//         height={80}
-//         className={styles.squiggle}
-//       />
-
-//       <div className={styles.card}>
-//         {/* ETIC logo - top left */}
-//         <div className={styles.logoRow}>
-//           <Image
-//             src="/logo etic.svg"
-//             alt="ETIC"
-//             width={56}
-//             height={56}
-//             className={styles.logo}
-//           />
-//         </div>
-
-//         {/* Main content */}
-//         <div className={styles.content}>
-//           <h1 className={styles.title}>
-//             WELCOME TO
-//             <br />
-//             <span className={styles.gradRedOrange}>
-//               Decision Deck
-//             </span>
-//           </h1>
-
-//           {/* Tagline with green decoration */}
-//           <div className={styles.taglineRow}>
-//             <Image
-//               src="/Layer 23.svg"
-//               alt=""
-//               width={28}
-//               height={28}
-//             />
-
-//             <p className={styles.tagline}>
-//               flip the card, make the decision
-//             </p>
-//           </div>
-
-//           {/* Google renders its official button here */}
-//           <div
-//             ref={buttonRef}
-//             className={styles.googleButton}
-//           />
-
-//           <p className={styles.hint}>
-//             Sign in with your Google account to proceed.
-//             <br />
-//             Your role permissions are automatically applied
-//             upon login.
-//           </p>
-//         </div>
-//       </div>
-//     </main>
-//   );
-// }
-// // "use client";
-
-// // import { useEffect, useRef } from "react";
-// // import { useRouter } from "next/navigation";
-
-// // declare global {
-// //   interface Window {
-// //     google: any;
-// //   }
-// // }
-
-// // export default function LoginPage() {
-// //   const router = useRouter();
-// //   const buttonRef = useRef<HTMLDivElement>(null);
-
-// //   async function handleCredentialResponse(response: { credential: string }) {
-// //     const res = await fetch("/api/auth/google", {
-// //       method: "POST",
-// //       headers: { "Content-Type": "application/json" },
-// //       body: JSON.stringify({ credential: response.credential }),
-// //     });
-
-// //     if (res.ok) {
-// //       router.push("/events");
-// //       router.refresh();
-// //     } else {
-// //       alert("Échec de la connexion");
-// //     }
-// //   }
-
-// //   useEffect(() => {
-// //     const script = document.createElement("script");
-// //     script.src = "https://accounts.google.com/gsi/client";
-// //     script.async = true;
-// //     script.onload = () => {
-// //       window.google.accounts.id.initialize({
-// //         client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-// //         callback: handleCredentialResponse,
-// //       });
-// //       window.google.accounts.id.renderButton(buttonRef.current, {
-// //         theme: "outline",
-// //         size: "large",
-// //       });
-// //     };
-// //     document.body.appendChild(script);
-// //     return () => {
-// //       document.body.removeChild(script);
-// //     };
-// //   }, []);
-
-// //   return (
-// //     <main style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center" }}>
-// //       <div ref={buttonRef} />
-// //     </main>
-// //   );
-// // }
 
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "./login.module.css";
-
-declare global {
-  interface Window {
-    google: any;
-  }
-}
 
 export default function LoginPage() {
   const router = useRouter();
   const buttonRef = useRef<HTMLDivElement>(null);
 
-  async function handleCredentialResponse(response: {
-    credential: string;
-  }) {
-    const res = await fetch("/api/auth/google", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        credential: response.credential,
-      }),
-    });
-    //if logged in successfuly, redirect to /events
-    if (res.ok) {
-      router.push("/events");
-      router.refresh();
-    } else {
-      alert("Échec de la connexion");
-    }
-  }
+  const handleCredentialResponse = useCallback(
+    async (response: { credential: string }) => {
+      try {
+        const res = await fetch("/api/auth/google", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            credential: response.credential,
+          }),
+        });
+
+        if (res.ok) {
+          router.push("/events");
+          router.refresh();
+        } else {
+          const data = await res.json().catch(() => null);
+          alert(data?.error || "Échec de la connexion");
+        }
+      } catch (err) {
+        console.error("Login request error:", err);
+        alert("Erreur de connexion au serveur");
+      }
+    },
+    [router]
+  );
 
   useEffect(() => {
-    const script = document.createElement("script");
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
+    const initializeGoogleSignIn = () => {
+      if (!buttonRef.current || !window.google?.accounts?.id) return;
 
-    script.onload = () => {
-      if (!buttonRef.current) return;
+      if (!clientId) {
+        console.warn(
+          "NEXT_PUBLIC_GOOGLE_CLIENT_ID is not set in .env. Google login requires this key."
+        );
+        return;
+      }
 
       window.google.accounts.id.initialize({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        client_id: clientId,
         callback: handleCredentialResponse,
       });
 
@@ -249,12 +65,23 @@ export default function LoginPage() {
       });
     };
 
+    if (window.google?.accounts?.id) {
+      initializeGoogleSignIn();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.onload = initializeGoogleSignIn;
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
     };
-  }, []);
+  }, [handleCredentialResponse]);
 
   return (
     <main className={styles.page}>

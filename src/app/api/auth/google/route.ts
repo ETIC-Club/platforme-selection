@@ -30,28 +30,41 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Database unavailable" }, { status: 500 });
   }
 
-  const existing = await prisma.user.findUnique({ where: { email: payload.email } });
+  const email = payload.email.toLowerCase().trim();
+  const googleId = payload.sub;
 
-  if (!existing) {
+  // 1. Verify user is authorized in the database (created by an admin or seeded)
+  const existingUser = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!existingUser) {
     return NextResponse.json(
       { error: "Compte non autorisé. Contactez un administrateur." },
       { status: 403 }
     );
   }
 
-  if (existing.googleId && existing.googleId !== payload.sub) {
+  // 2. Prevent conflict if this Google ID is already bound to a DIFFERENT user account
+  const conflictingUser = await prisma.user.findUnique({
+    where: { googleId },
+  });
+
+  if (conflictingUser && conflictingUser.id !== existingUser.id) {
     return NextResponse.json(
-      { error: "Cet email est déjà lié à un autre compte Google." },
+      { error: "Ce compte Google est déjà lié à un autre compte utilisateur." },
       { status: 409 }
     );
   }
 
+  // 3. Link Google credential on first connection or update last login
+  // (Replaces placeholder/null googleId with the verified Google sub, preserving DB roles)
   const user = await prisma.user.update({
-    where: { id: existing.id },
+    where: { id: existingUser.id },
     data: {
-      googleId: payload.sub,
+      googleId,
       lastLoginAt: new Date(),
-      fullName: existing.fullName ?? payload.name ?? null,
+      fullName: existingUser.fullName || payload.name || null,
     },
   });
 

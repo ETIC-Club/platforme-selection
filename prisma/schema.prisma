@@ -12,6 +12,7 @@ model User {
   email           String              @unique
   fullName        String?             @map("full_name")
   isSuperAdmin    Boolean             @default(false) @map("is_super_admin")
+  selectorType    SelectorType?       @map("selector_type")
   createdAt       DateTime            @default(now()) @map("created_at")
   lastLoginAt     DateTime?           @map("last_login_at")
   assignedBy      Assignment[]        @relation("AssignmentAssignedBy")

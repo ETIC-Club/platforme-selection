@@ -6,6 +6,11 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | null | undefined;
 };
 
+// In development, purge any stale in-memory singleton so regenerated schema takes effect
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = undefined;
+}
+
 function getPrismaClient(): PrismaClient {
   if (globalForPrisma.prisma !== undefined && globalForPrisma.prisma !== null) {
     return globalForPrisma.prisma;

@@ -101,16 +101,7 @@ setEvents(data.events);
       return;
     }
 
-    const isSelector =
-      role === "Sélecteur RH" ||
-      role === "Sélecteur Dev" ||
-      role === "Selector RH" ||
-      role === "Selector Technique";
 
-    if (isSelector && !event) {
-      alert("Veuillez sélectionner un événement.");
-      return;
-    }
 
     try {
       const response = await fetch("/api/users", {
@@ -268,7 +259,7 @@ setEvents(data.events);
           {(role === "Sélecteur RH" || role === "Sélecteur Dev" || role === "Selector RH" || role === "Selector Technique") && (
             <div className={styles.field}>
               <label htmlFor="event">
-                Choisissez l’événement du sélecteur
+                Choisissez l’événement du sélecteur (optionnel)
               </label>
 
               <div className={styles.customSelect}>
@@ -280,7 +271,7 @@ setEvents(data.events);
                   <span>
                     {eventsLoading
                       ? "Chargement des événements..."
-                      : event || "Sélectionnez un événement"}
+                      : event || "Aucun événement (optionnel)"}
                   </span>
 
                   <span className={styles.customSelectArrow}>▼</span>
@@ -288,6 +279,16 @@ setEvents(data.events);
 
                 {eventDropdownOpen && (
         <div className={styles.customSelectOptions}>
+          <button
+            type="button"
+            className={styles.customSelectOption}
+            onClick={() => {
+              setEvent("");
+              setEventDropdownOpen(false);
+            }}
+          >
+            Aucun événement (optionnel)
+          </button>
           {events.map((item) => (
             <button
               key={item.id}

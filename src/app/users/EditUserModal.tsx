@@ -116,10 +116,7 @@ export default function EditUserModal({
       return;
     }
 
-    if (isSelector && !event) {
-      alert("Veuillez sélectionner un événement.");
-      return;
-    }
+
 
     try {
       setIsSaving(true);
@@ -239,7 +236,7 @@ export default function EditUserModal({
           {isSelector && (
             <div className={styles.field}>
               <label htmlFor="editEvent">
-                Événement du sélecteur
+                Événement du sélecteur (optionnel)
               </label>
 
               <select
@@ -251,7 +248,7 @@ export default function EditUserModal({
                 <option value="">
                   {eventsLoading
                     ? "Chargement des événements..."
-                    : "Sélectionnez un événement"}
+                    : "Aucun événement (optionnel)"}
                 </option>
 
                 {events.map((item) => (

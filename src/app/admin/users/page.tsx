@@ -133,7 +133,7 @@ const loadUsers = async () => {
                 <thead>
                   <tr>
                     <th>Nom complet</th>
-                    <th>joined in</th>
+                    <th>Email</th>
                     <th>events selected</th>
                     <th>candidates selected</th>
                     <th>Role</th>
@@ -145,7 +145,7 @@ const loadUsers = async () => {
                     <tr key={user.id}>
                       <td>{user.name}</td>
 
-                      <td>{user.joined}</td>
+                      <td>{user.email}</td>
 
                       <td>{user.events}</td>
 

@@ -25,6 +25,20 @@ export async function GET() {
       },
     });
 
+    let selectorTypeMap = new Map<number, string>();
+    try {
+      const rawTypes = await prisma.$queryRawUnsafe<{ id: number; selector_type: string | null }[]>(
+        'SELECT id, selector_type::text FROM users'
+      );
+      for (const row of rawTypes) {
+        if (row.selector_type) {
+          selectorTypeMap.set(row.id, row.selector_type);
+        }
+      }
+    } catch {
+      // fallback if column doesn't exist
+    }
+
     const formattedUsers = users.map((user) => {
       const events = user.eventSelectors.length;
 
@@ -35,11 +49,9 @@ export async function GET() {
       );
 
       const selectorType =
+        selectorTypeMap.get(user.id) ??
+        (user as any).selectorType ??
         user.eventSelectors[0]?.selectorType;
-
-      const isSelector =
-        selectorType === "RH" ||
-        selectorType === "Technique";
 
       let role = "Sélecteur Dev";
       let roleType = "selector_dev";
@@ -136,13 +148,6 @@ export async function POST(request: Request) {
           ? "Technique"
           : null;
 
-    if (selectorType && !event) {
-      return NextResponse.json(
-        { error: "Event is required for selectors." },
-        { status: 400 }
-      );
-    }
-
     const existingUser = await prisma.user.findUnique({
       where: {
         email: email.trim(),
@@ -158,7 +163,7 @@ export async function POST(request: Request) {
 
     let eventRecord = null;
 
-    if (selectorType) {
+    if (selectorType && event && typeof event === "string" && event.trim()) {
       eventRecord = await prisma.event.findFirst({
         where: {
           name: event.trim(),
@@ -174,32 +179,39 @@ export async function POST(request: Request) {
     }
 
     const isSuperAdmin = role === "Admin";
+    const fullName = `${firstName.trim()} ${lastName.trim()}`;
 
-    const newUser = await prisma.user.create({
-      data: {
-        googleId: `manual-${crypto.randomUUID()}`,
-        email: email.trim(),
-        fullName: `${firstName.trim()} ${lastName.trim()}`,
-        isSuperAdmin,
+    const insertedRows = await prisma.$queryRawUnsafe<{ id: number }[]>(
+      `INSERT INTO users (email, full_name, is_super_admin, google_id, selector_type, created_at)
+       VALUES ($1, $2, $3, NULL, $4::"SelectorType", NOW())
+       RETURNING id;`,
+      email.trim(),
+      fullName,
+      isSuperAdmin,
+      selectorType
+    );
 
-        ...(selectorType && eventRecord
-          ? {
-              eventSelectors: {
-                create: {
-                  eventId: eventRecord.id,
-                  selectorType,
-                  isActive: true,
-                },
-              },
-            }
-          : {}),
-      },
-    });
+    const newUserId = insertedRows[0]?.id;
+
+    if (!newUserId) {
+      throw new Error("Failed to insert user.");
+    }
+
+    if (selectorType && eventRecord) {
+      await prisma.eventSelector.create({
+        data: {
+          userId: newUserId,
+          eventId: eventRecord.id,
+          selectorType,
+          isActive: true,
+        },
+      });
+    }
 
     return NextResponse.json(
       {
         message: "User created successfully.",
-        id: newUser.id,
+        id: newUserId,
       },
       { status: 201 }
     );
@@ -359,55 +371,44 @@ export async function PATCH(request: Request) {
        * A selector must have an event.
        */
       if (selectorType) {
-        if (
-          typeof body.event !== "string" ||
-          !body.event.trim()
-        ) {
-          return NextResponse.json(
-            {
-              error:
-                "An event is required for selector roles.",
-            },
-            { status: 400 }
-          );
-        }
-
-        const eventRecord = await prisma.event.findFirst({
-          where: {
-            name: body.event.trim(),
-          },
-        });
-
-        if (!eventRecord) {
-          return NextResponse.json(
-            { error: "Event not found." },
-            { status: 404 }
-          );
-        }
-
-        const existingSelector =
-          currentUser.eventSelectors[0];
-
-        if (existingSelector) {
-          await prisma.eventSelector.update({
+        if (typeof body.event === "string" && body.event.trim()) {
+          const eventRecord = await prisma.event.findFirst({
             where: {
-              id: existingSelector.id,
-            },
-            data: {
-              eventId: eventRecord.id,
-              selectorType,
-              isActive: true,
+              name: body.event.trim(),
             },
           });
-        } else {
-          await prisma.eventSelector.create({
-            data: {
-              userId: id,
-              eventId: eventRecord.id,
-              selectorType,
-              isActive: true,
-            },
-          });
+
+          if (!eventRecord) {
+            return NextResponse.json(
+              { error: "Event not found." },
+              { status: 404 }
+            );
+          }
+
+          const existingSelector =
+            currentUser.eventSelectors[0];
+
+          if (existingSelector) {
+            await prisma.eventSelector.update({
+              where: {
+                id: existingSelector.id,
+              },
+              data: {
+                eventId: eventRecord.id,
+                selectorType,
+                isActive: true,
+              },
+            });
+          } else {
+            await prisma.eventSelector.create({
+              data: {
+                userId: id,
+                eventId: eventRecord.id,
+                selectorType,
+                isActive: true,
+              },
+            });
+          }
         }
       }
     }
@@ -416,6 +417,25 @@ export async function PATCH(request: Request) {
       where: { id },
       data: updateData,
     });
+
+    if (role !== undefined) {
+      try {
+        if (selectorType) {
+          await prisma.$executeRawUnsafe(
+            'UPDATE users SET selector_type = $1::"SelectorType" WHERE id = $2',
+            selectorType,
+            id
+          );
+        } else {
+          await prisma.$executeRawUnsafe(
+            'UPDATE users SET selector_type = NULL WHERE id = $1',
+            id
+          );
+        }
+      } catch (err) {
+        console.warn("Could not update selector_type column:", err);
+      }
+    }
 
     return NextResponse.json({
       id: updatedUser.id,
