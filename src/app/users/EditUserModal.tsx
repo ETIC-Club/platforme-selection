@@ -26,7 +26,7 @@ type EditUserModalProps = {
   onUserUpdated: () => Promise<void>;
 };
 
-const roles = ["DEV", "Selector RH", "Selector Technique"];
+const roles = ["Admin", "Sélecteur RH", "Sélecteur Dev"];
 
 export default function EditUserModal({
   isOpen,
@@ -92,6 +92,8 @@ export default function EditUserModal({
   }
 
   const isSelector =
+    role === "Sélecteur RH" ||
+    role === "Sélecteur Dev" ||
     role === "Selector RH" ||
     role === "Selector Technique";
 
@@ -220,7 +222,7 @@ export default function EditUserModal({
 
                 setRole(selectedRole);
 
-                if (selectedRole === "DEV") {
+                if (selectedRole === "Admin" || selectedRole === "DEV") {
                   setEvent("");
                 }
               }}

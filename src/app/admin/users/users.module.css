@@ -590,7 +590,7 @@
   flex-shrink: 0;
 
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: hidden;
 }
 
 .tableWrapper table {
@@ -807,9 +807,15 @@
 }
 
 .devRole {
-  background: #df8994;
+  background: #d1fae5;
 
-  color: #ffffff;
+  color: #065f46;
+}
+
+.adminRole {
+  background: #e0e7ff;
+
+  color: #3730a3;
 }
 
 
@@ -849,8 +855,8 @@
    ========================= */
 
 .moreButton {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
 
   display: flex;
   align-items: center;
@@ -858,52 +864,42 @@
 
   padding: 0;
 
-  border: none;
-  border-radius: 9px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
 
-  background: transparent;
+  background: #f9fafb;
 
-  color: #ffffff;
+  color: #1f2937;
 
   font-family: Arial, sans-serif;
 
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 900;
 
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   line-height: 1;
 
   cursor: pointer;
 
-  opacity: 0;
-
-  transform: translateY(2px);
-
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease,
-    background 0.2s ease;
-}
-
-
-/* Show dots when row is hovered */
-
-.userRow:hover .moreButton,
-.moreButton:focus {
   opacity: 1;
 
-  transform: translateY(0);
-}
-
-
-/* Green translucent action button */
-
-.userRow:hover .moreButton {
-  background: rgba(26, 175, 93, 0.45);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .moreButton:hover {
-  background: rgba(26, 175, 93, 0.65);
+  background: #f3f4f6;
+  border-color: #9ca3af;
+  color: #000000;
+  transform: scale(1.05);
+}
+
+.userRow:hover .moreButton {
+  background: #f3f4f6;
+  border-color: #9ca3af;
 }
 
 
@@ -1532,11 +1528,18 @@
   text-overflow: ellipsis;
 }
 
-.detailsEditButton {
+.detailsActionsRow {
+  display: flex;
+  gap: 12px;
   width: 100%;
+  margin-top: 24px;
+}
+
+.detailsEditButton {
+  flex: 1;
   height: 42px;
 
-  margin-top: 24px;
+  margin-top: 0;
 
   border: 0;
   border-radius: 9px;
@@ -1566,6 +1569,37 @@
 }
 
 .detailsEditButton:active {
+  transform: scale(0.98);
+}
+
+.detailsDeleteButton {
+  flex: 1;
+  height: 42px;
+
+  border: 1px solid #fecaca;
+  border-radius: 9px;
+
+  background: #fef2f2;
+
+  color: #dc2626;
+
+  font-family: "Gotham", Arial, sans-serif;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: all 0.15s ease;
+}
+
+.detailsDeleteButton:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #f87171;
+}
+
+.detailsDeleteButton:active {
   transform: scale(0.98);
 }
 

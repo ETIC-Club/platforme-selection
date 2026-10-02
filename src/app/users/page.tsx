@@ -121,10 +121,12 @@ export default function UsersPage() {
         const filteredUsers = users.filter((user) => {
           const matchesRole =
             activeFilter === "All" ||
-            (activeFilter === "Selectors" &&
-              user.roleType === "selector") ||
-            (activeFilter === "Devs" &&
-              user.roleType === "dev");
+            (activeFilter === "Admins" &&
+              user.roleType === "admin") ||
+            (activeFilter === "Sélecteurs RH" &&
+              (user.roleType === "selector_rh" || user.role.includes("RH"))) ||
+            (activeFilter === "Sélecteurs Dev" &&
+              (user.roleType === "selector_dev" || user.role.includes("Dev") || user.role.includes("Technique") || user.role === "DEV"));
 
           const search = searchQuery.trim().toLowerCase();
 
@@ -191,7 +193,7 @@ export default function UsersPage() {
 
             {/* FILTERS */}
             <div className={styles.filters}>
-              {["All", "Selectors", "Devs"].map(
+              {["All", "Admins", "Sélecteurs RH", "Sélecteurs Dev"].map(
                 (filter) => (
                   <button
                     key={filter}
@@ -236,9 +238,9 @@ export default function UsersPage() {
 
                         <td>{user.joined}</td>
 
-                        <td>{user.events}</td>
+                        <td>{user.roleType === "admin" ? "-" : user.events}</td>
 
-                        <td>{user.candidates}</td>
+                        <td>{user.roleType === "admin" ? "-" : user.candidates}</td>
 
                         <td className={styles.roleCell}>
                           <div
@@ -246,9 +248,11 @@ export default function UsersPage() {
                           >
                             <span
                               className={`${styles.role} ${
-                                user.roleType === "dev"
-                                  ? styles.devRole
-                                  : styles.selectorRole
+                                user.roleType === "admin"
+                                  ? styles.adminRole
+                                  : user.roleType === "selector_rh" || user.role.includes("RH")
+                                  ? styles.selectorRole
+                                  : styles.devRole
                               }`}
                             >
                               {user.role}
@@ -269,61 +273,13 @@ export default function UsersPage() {
                                 styles.moreButton
                               }
                               aria-label={`Actions for ${user.name}`}
+                              title="View details & actions"
                               onClick={() =>
-                                setOpenMenuId(
-                                  openMenuId ===
-                                    user.id
-                                    ? null
-                                    : user.id
-                                )
+                                handleViewDetails(user)
                               }
                             >
                               •••
                             </button>
-
-                            {openMenuId === user.id && (
-                              <div
-                                className={
-                                  styles.actionMenu
-                                }
-                              >
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleViewDetails(
-                                      user
-                                    )
-                                  }
-                                >
-                                  Details
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleEditUser(
-                                      user
-                                    )
-                                  }
-                                >
-                                  Edit
-                                </button>
-
-                                <button
-                                  type="button"
-                                  className={
-                                    styles.deleteAction
-                                  }
-                                  onClick={() =>
-                                    handleDeleteUser(
-                                      user
-                                    )
-                                  }
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            )}
                           </div>
                         </td>
                       </tr>
@@ -454,10 +410,11 @@ export default function UsersPage() {
                   >
                     <span
                       className={`${styles.role} ${
-                        selectedUser.roleType ===
-                        "dev"
-                          ? styles.devRole
-                          : styles.selectorRole
+                        selectedUser.roleType === "admin"
+                          ? styles.adminRole
+                          : selectedUser.roleType === "selector_rh" || selectedUser.role.includes("RH")
+                          ? styles.selectorRole
+                          : styles.devRole
                       }`}
                     >
                       {selectedUser.role}
@@ -498,7 +455,7 @@ export default function UsersPage() {
                     >
                       <span>Events selected</span>
                       <strong>
-                        {selectedUser.events}
+                        {selectedUser.roleType === "admin" ? "-" : selectedUser.events}
                       </strong>
                     </div>
 
@@ -511,23 +468,37 @@ export default function UsersPage() {
                         Candidates selected
                       </span>
                       <strong>
-                        {selectedUser.candidates}
+                        {selectedUser.roleType === "admin" ? "-" : selectedUser.candidates}
                       </strong>
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    className={
-                      styles.detailsEditButton
-                    }
-                    onClick={() => {
-                      setIsDetailsOpen(false);
-                      setIsEditUserOpen(true);
-                    }}
-                  >
-                    Edit user
-                  </button>
+                  <div className={styles.detailsActionsRow}>
+                    <button
+                      type="button"
+                      className={
+                        styles.detailsEditButton
+                      }
+                      onClick={() => {
+                        setIsDetailsOpen(false);
+                        setIsEditUserOpen(true);
+                      }}
+                    >
+                      Edit user
+                    </button>
+
+                    <button
+                      type="button"
+                      className={
+                        styles.detailsDeleteButton
+                      }
+                      onClick={() =>
+                        handleDeleteUser(selectedUser)
+                      }
+                    >
+                      Delete user
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

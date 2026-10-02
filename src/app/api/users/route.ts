@@ -41,6 +41,20 @@ export async function GET() {
         selectorType === "RH" ||
         selectorType === "Technique";
 
+      let role = "Sélecteur Dev";
+      let roleType = "selector_dev";
+
+      if (user.isSuperAdmin) {
+        role = "Admin";
+        roleType = "admin";
+      } else if (selectorType === "RH") {
+        role = "Sélecteur RH";
+        roleType = "selector_rh";
+      } else {
+        role = "Sélecteur Dev";
+        roleType = "selector_dev";
+      }
+
       return {
         id: user.id,
         name: user.fullName ?? "",
@@ -50,12 +64,10 @@ export async function GET() {
           day: "numeric",
           year: "numeric",
         }),
-        events,
-        candidates,
-        role: isSelector
-          ? `Selector ${selectorType}`
-          : "DEV",
-        roleType: isSelector ? "selector" : "dev",
+        events: user.isSuperAdmin ? 0 : events,
+        candidates: user.isSuperAdmin ? 0 : candidates,
+        role,
+        roleType,
       };
     });
 
@@ -118,9 +130,9 @@ export async function POST(request: Request) {
     }
 
     const selectorType =
-      role === "Selector RH"
+      role === "Sélecteur RH" || role === "Selector RH"
         ? "RH"
-        : role === "Selector Technique"
+        : role === "Sélecteur Dev" || role === "Selector Technique"
           ? "Technique"
           : null;
 
@@ -161,12 +173,14 @@ export async function POST(request: Request) {
       }
     }
 
+    const isSuperAdmin = role === "Admin";
+
     const newUser = await prisma.user.create({
       data: {
         googleId: `manual-${crypto.randomUUID()}`,
         email: email.trim(),
         fullName: `${firstName.trim()} ${lastName.trim()}`,
-        isSuperAdmin: false,
+        isSuperAdmin,
 
         ...(selectorType && eventRecord
           ? {
@@ -236,6 +250,7 @@ export async function PATCH(request: Request) {
     const updateData: {
       fullName?: string;
       email?: string;
+      isSuperAdmin?: boolean;
     } = {};
 
     if (body.name !== undefined) {
@@ -288,9 +303,12 @@ export async function PATCH(request: Request) {
 
     if (role !== undefined) {
       const validRoles = [
-        "DEV",
+        "Admin",
+        "Sélecteur RH",
+        "Sélecteur Dev",
         "Selector RH",
         "Selector Technique",
+        "DEV",
       ];
 
       if (!validRoles.includes(role)) {
@@ -300,10 +318,23 @@ export async function PATCH(request: Request) {
         );
       }
 
+      if (role === "Admin") {
+        updateData.isSuperAdmin = true;
+        if (currentUser.eventSelectors.length > 0) {
+          await prisma.eventSelector.deleteMany({
+            where: {
+              userId: id,
+            },
+          });
+        }
+      } else {
+        updateData.isSuperAdmin = false;
+      }
+
       const selectorType =
-        role === "Selector RH"
+        role === "Sélecteur RH" || role === "Selector RH"
           ? "RH"
-          : role === "Selector Technique"
+          : role === "Sélecteur Dev" || role === "Selector Technique" || role === "DEV"
             ? "Technique"
             : null;
 

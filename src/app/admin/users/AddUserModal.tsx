@@ -14,7 +14,7 @@ type Event = {
   name: string;
 };
 
-const roles = ["DEV", "Selector RH", "Selector Technique"];
+const roles = ["Admin", "Sélecteur RH", "Sélecteur Dev"];
 
 export default function AddUserModal({
   isOpen,
@@ -101,10 +101,13 @@ setEvents(data.events);
       return;
     }
 
-    if (
-      (role === "Selector RH" || role === "Selector Technique") &&
-      !event
-    ) {
+    const isSelector =
+      role === "Sélecteur RH" ||
+      role === "Sélecteur Dev" ||
+      role === "Selector RH" ||
+      role === "Selector Technique";
+
+    if (isSelector && !event) {
       alert("Veuillez sélectionner un événement.");
       return;
     }
@@ -245,6 +248,7 @@ setEvents(data.events);
               setRoleDropdownOpen(false);
 
               if (
+                item === "Admin" ||
                 item === "DEV" ||
                 item === ""
               ) {
@@ -261,30 +265,28 @@ setEvents(data.events);
   </div>
 </div>
 
-          <div className={styles.field}>
-  <label htmlFor="event">
-    choisissez l’événement du selecteur
-  </label>
+          {(role === "Sélecteur RH" || role === "Sélecteur Dev" || role === "Selector RH" || role === "Selector Technique") && (
+            <div className={styles.field}>
+              <label htmlFor="event">
+                Choisissez l’événement du sélecteur
+              </label>
 
-  <div className={styles.customSelect}>
-    <button
-      type="button"
-      className={styles.customSelectButton}
-      disabled={role === "DEV" || role === ""}
-      onClick={() => setEventDropdownOpen((prev) => !prev)}
-    >
-      <span>
-        {eventsLoading
-          ? "Chargement des événements..."
-          : event || "Sélectionnez un événement"}
-      </span>
+              <div className={styles.customSelect}>
+                <button
+                  type="button"
+                  className={styles.customSelectButton}
+                  onClick={() => setEventDropdownOpen((prev) => !prev)}
+                >
+                  <span>
+                    {eventsLoading
+                      ? "Chargement des événements..."
+                      : event || "Sélectionnez un événement"}
+                  </span>
 
-      <span className={styles.customSelectArrow}>▼</span>
-    </button>
+                  <span className={styles.customSelectArrow}>▼</span>
+                </button>
 
-    {eventDropdownOpen &&
-      role !== "DEV" &&
-      role !== "" && (
+                {eventDropdownOpen && (
         <div className={styles.customSelectOptions}>
           {events.map((item) => (
             <button
@@ -304,6 +306,7 @@ setEvents(data.events);
       )}
   </div>
 </div>
+)}
 
           <button
             type="submit"

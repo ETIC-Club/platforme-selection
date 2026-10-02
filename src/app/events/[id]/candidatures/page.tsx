@@ -168,11 +168,7 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
 
         const currentSelectorType = role === "SELECTOR_RH" ? "RH" : "Technique";
         const currentSelectorName =
-          role === "SUPER_ADMIN"
-            ? "Super Admin"
-            : role === "SELECTOR_RH"
-            ? "Sélecteur RH"
-            : "Sélecteur Tech";
+          role === "SELECTOR_RH" ? "Sélecteur RH" : "Sélecteur Tech";
 
         const filteredCandidates = candidates.filter((cand) => {
           if (filter === "to_review" && cand.finalStatus !== "en_attente") return false;
