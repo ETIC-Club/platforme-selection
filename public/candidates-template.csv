@@ -1,0 +1,3 @@
+nom,prenom,email,telephone,education,bio,competences,github_url,cv_url
+Moktefi,Ines,oi_moktefi@esi.dz,+213 555 12 34 56,ESI - 1CS Ingénierie,Étudiante passionnée par le développement web,"TypeScript,React,Next.js",https://github.com/ines-mktf,https://example.com/cv-ines.pdf
+Benali,Youcef,y_benali@esi.dz,+213 661 78 90 12,ESI - 2CS Systèmes,Développeur Full-Stack et passionné IA,"Python,FastAPI,React",https://github.com/y-benali,

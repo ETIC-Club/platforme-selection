@@ -1,504 +1,320 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import AddUserModal from "../admin/users/AddUserModal";
-import EditUserModal from "./EditUserModal";
-import styles from "../admin/users/users.module.css";
+import { PlusIcon } from "@/components/Icons";
+import { useAuth } from "@/context/AuthContext";
+import styles from "@/components/dashboard.module.css";
+import selStyles from "@/app/selectors/selectors.module.css";
 
-type User = {
+interface UserItem {
   id: number;
-  name: string;
   email: string;
-  joined: string;
-  events: number;
-  candidates: number;
-  role: string;
-  roleType: string;
-};
-
-const USERS_PER_PAGE = 10;
+  fullName: string | null;
+  isSuperAdmin: boolean;
+  createdAt: string;
+  _count: { eventSelectors: number };
+}
 
 export default function UsersPage() {
-  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const [users, setUsers] = useState<UserItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const [isEditUserOpen, setIsEditUserOpen] = useState(false);
+  // Add user form state
+  const [newEmail, setNewEmail] = useState("");
+  const [newName, setNewName] = useState("");
+  const [addError, setAddError] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
 
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const { user: authUser } = useAuth();
+  const isAdmin = authUser?.role === "SUPER_ADMIN";
 
-  const [selectedUser, setSelectedUser] =
-    useState<User | null>(null);
-
-  const [users, setUsers] = useState<User[]>([]);
-
-  const [activeFilter, setActiveFilter] = useState("All");
-
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const [openMenuId, setOpenMenuId] = useState<number | null>(
-    null
-  );
-
-  const refreshUsers = async () => {
-    try {
-      const response = await fetch("/api/users");
-
-      if (!response.ok) {
-        throw new Error("Failed to load users.");
+  useEffect(() => {
+    let isMounted = true;
+    async function loadUsers() {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/users?limit=100");
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted) {
+            setUsers(data.users || []);
+            setTotal(data.total || 0);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load users:", err);
+      } finally {
+        if (isMounted) setLoading(false);
       }
-
-      const data = await response.json();
-
-      setUsers(data);
-    } catch (error) {
-      console.error("Error loading users:", error);
-      alert("Failed to load users.");
     }
-  };
 
-  const handleEditUser = (user: User) => {
-    setSelectedUser(user);
-    setOpenMenuId(null);
-    setIsEditUserOpen(true);
-  };
+    loadUsers();
+    return () => { isMounted = false; };
+  }, [refreshKey]);
 
-  const handleViewDetails = (user: User) => {
-    setSelectedUser(user);
-    setOpenMenuId(null);
-    setIsDetailsOpen(true);
-  };
+  const handleAddUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddError(null);
 
-  const handleDeleteUser = async (user: User) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete ${user.name}?`
-    );
-
-    if (!confirmed) {
+    const trimmedEmail = newEmail.trim().toLowerCase();
+    if (!trimmedEmail) {
+      setAddError("L'email est requis.");
       return;
     }
 
+    setAdding(true);
     try {
-      const response = await fetch(
-        `/api/users?id=${user.id}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) {
-        const data = await response.json();
-
-        alert(data.error || "Failed to delete user.");
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          fullName: newName.trim() || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setAddError(data.error || "Erreur lors de la création.");
         return;
       }
-
-      setOpenMenuId(null);
-
-      if (selectedUser?.id === user.id) {
-        setSelectedUser(null);
-        setIsDetailsOpen(false);
-        setIsEditUserOpen(false);
-      }
-
-      await refreshUsers();
+      setNewEmail("");
+      setNewName("");
+      setShowAddModal(false);
+      setRefreshKey((k) => k + 1);
     } catch {
-      alert("An error occurred while deleting the user.");
+      setAddError("Erreur réseau.");
+    } finally {
+      setAdding(false);
     }
   };
 
-  useEffect(() => {
-    refreshUsers();
-  }, []);
+  const handleDelete = async (userId: number, email: string) => {
+    if (!confirm(`Supprimer l'utilisateur ${email} ?`)) return;
 
-  const handleFilterChange = (filter: string) => {
-    setActiveFilter(filter);
-    setCurrentPage(1);
+    try {
+      const res = await fetch(`/api/users/${userId}`, { method: "DELETE" });
+      if (res.ok) {
+        setRefreshKey((k) => k + 1);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || "Erreur lors de la suppression.");
+      }
+    } catch {
+      alert("Erreur réseau.");
+    }
+  };
+
+  const getInitials = (name: string | null, email: string): string => {
+    const src = name || email;
+    return src
+      .split(/[\s@]/)
+      .map((n) => n[0])
+      .filter(Boolean)
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
   };
 
   return (
     <DashboardLayout>
       {({ searchQuery }) => {
-        const filteredUsers = users.filter((user) => {
-          const matchesRole =
-            activeFilter === "All" ||
-            (activeFilter === "Admins" &&
-              user.roleType === "admin") ||
-            (activeFilter === "Sélecteurs RH" &&
-              (user.roleType === "selector_rh" || user.role.includes("RH"))) ||
-            (activeFilter === "Sélecteurs Dev" &&
-              (user.roleType === "selector_dev" || user.role.includes("Dev") || user.role.includes("Technique") || user.role === "DEV"));
+        if (!isAdmin) {
+          return (
+            <div className={styles.mainCard}>
+              <div className={selStyles.emptyState}>
+                <div className={selStyles.emptyTitle}>Accès réservé</div>
+                <div className={selStyles.emptySubtitle}>
+                  Seuls les administrateurs peuvent gérer les utilisateurs.
+                </div>
+              </div>
+            </div>
+          );
+        }
 
-          const search = searchQuery.trim().toLowerCase();
-
-          const matchesSearch =
-            !search ||
-            user.name.toLowerCase().includes(search) ||
-            user.email.toLowerCase().includes(search) ||
-            user.role.toLowerCase().includes(search);
-
-          return matchesRole && matchesSearch;
+        const filtered = users.filter((u) => {
+          if (!searchQuery.trim()) return true;
+          const q = searchQuery.toLowerCase();
+          return (
+            u.email.toLowerCase().includes(q) ||
+            (u.fullName || "").toLowerCase().includes(q)
+          );
         });
 
-        const totalPages = Math.max(
-          1,
-          Math.ceil(
-            filteredUsers.length / USERS_PER_PAGE
-          )
-        );
-
-        const safeCurrentPage = Math.min(
-          currentPage,
-          totalPages
-        );
-
-        const startIndex =
-          (safeCurrentPage - 1) * USERS_PER_PAGE;
-
-        const paginatedUsers = filteredUsers.slice(
-          startIndex,
-          startIndex + USERS_PER_PAGE
-        );
-
-        const goToPreviousPage = () => {
-          setCurrentPage((page) =>
-            Math.max(1, page - 1)
-          );
-        };
-
-        const goToNextPage = () => {
-          setCurrentPage((page) =>
-            Math.min(totalPages, page + 1)
-          );
-        };
-
         return (
-          <div className={styles.mainContent}>
-            {/* HEADER */}
-            <div className={styles.pageHeader}>
-              <div>
-                <h1>User&apos;s overview</h1>
-              </div>
-
+          <div className={styles.mainCard}>
+            <div className={styles.mainHeader}>
+              <h1 className={styles.pageTitle}>
+                USERS ({loading ? "…" : total})
+              </h1>
               <button
                 type="button"
-                className={styles.addButton}
-                onClick={() =>
-                  setIsAddUserOpen(true)
-                }
+                className={styles.addEventBtn}
+                onClick={() => {
+                  setShowAddModal(true);
+                  setAddError(null);
+                }}
               >
-                ADD USER
-                <span>+</span>
+                <PlusIcon />
+                <span>ADD USER</span>
               </button>
             </div>
 
-            {/* FILTERS */}
-            <div className={styles.filters}>
-              {["All", "Admins", "Sélecteurs RH", "Sélecteurs Dev"].map(
-                (filter) => (
-                  <button
-                    key={filter}
-                    type="button"
-                    className={
-                      activeFilter === filter
-                        ? styles.filterActive
-                        : undefined
-                    }
-                    onClick={() =>
-                      handleFilterChange(filter)
-                    }
-                  >
-                    {filter}
-                  </button>
-                )
+            <div className={styles.eventsList}>
+              {loading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className={selStyles.skeletonCard}>
+                    <div className={`${selStyles.skeletonPulse} ${selStyles.skeletonAvatar}`} />
+                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <div className={`${selStyles.skeletonPulse} ${selStyles.skeletonText}`} style={{ width: "180px" }} />
+                      <div className={`${selStyles.skeletonPulse} ${selStyles.skeletonText} ${selStyles.skeletonTextShort}`} />
+                    </div>
+                  </div>
+                ))
+              ) : filtered.length === 0 ? (
+                <div className={selStyles.emptyState}>
+                  <div className={selStyles.emptyTitle}>Aucun utilisateur</div>
+                  <div className={selStyles.emptySubtitle}>
+                    {searchQuery
+                      ? "Aucun utilisateur ne correspond à votre recherche."
+                      : "Ajoutez des utilisateurs avec le bouton ci-dessus."}
+                  </div>
+                </div>
+              ) : (
+                filtered.map((u) => (
+                  <article key={u.id} className={styles.itemCard}>
+                    <div className={styles.candProfile}>
+                      <div className={selStyles.selectorAvatar}>
+                        {getInitials(u.fullName, u.email)}
+                      </div>
+                      <div className={styles.candNameGroup}>
+                        <span className={styles.candName}>
+                          {u.fullName || u.email}
+                        </span>
+                        <span className={styles.candEmail}>{u.email}</span>
+                      </div>
+                    </div>
+
+                    <span style={{ fontSize: "12px", color: "#8C8F8E" }}>
+                      {u._count.eventSelectors} événement{u._count.eventSelectors !== 1 ? "s" : ""}
+                    </span>
+
+                    {u.isSuperAdmin && (
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          padding: "3px 10px",
+                          borderRadius: "20px",
+                          background: "rgba(74, 222, 128, 0.12)",
+                          color: "var(--color-primary-green)",
+                        }}
+                      >
+                        Admin
+                      </span>
+                    )}
+
+                    <span style={{ fontSize: "12px", color: "#8C8F8E" }}>
+                      {new Date(u.createdAt).toLocaleDateString("fr-FR", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(u.id, u.email)}
+                      style={{
+                        background: "rgba(193, 51, 63, 0.08)",
+                        border: "none",
+                        borderRadius: "8px",
+                        padding: "6px 12px",
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        color: "#C1333F",
+                        cursor: "pointer",
+                      }}
+                      aria-label={`Supprimer ${u.email}`}
+                    >
+                      ✕ Supprimer
+                    </button>
+                  </article>
+                ))
               )}
             </div>
 
-            {/* TABLE */}
-            <div className={styles.tableWrapper}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Nom complet</th>
-                    <th>Email</th>
-                    <th>events selected</th>
-                    <th>candidates selected</th>
-                    <th>Role</th>
-                    <th></th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {paginatedUsers.length > 0 ? (
-                    paginatedUsers.map((user) => (
-                      <tr
-                        key={user.id}
-                        className={styles.userRow}
-                      >
-                        <td>{user.name}</td>
-
-                        <td>{user.email}</td>
-
-                        <td>{user.roleType === "admin" ? "-" : user.events}</td>
-
-                        <td>{user.roleType === "admin" ? "-" : user.candidates}</td>
-
-                        <td className={styles.roleCell}>
-                          <div
-                            className={styles.roleWrapper}
-                          >
-                            <span
-                              className={`${styles.role} ${
-                                user.roleType === "admin"
-                                  ? styles.adminRole
-                                  : user.roleType === "selector_rh" || user.role.includes("RH")
-                                  ? styles.selectorRole
-                                  : styles.devRole
-                              }`}
-                            >
-                              {user.role}
-                            </span>
-                          </div>
-                        </td>
-
-                        {/* ACTIONS */}
-                        <td className={styles.actionCell}>
-                          <div
-                            className={
-                              styles.actionMenuWrapper
-                            }
-                          >
-                            <button
-                              type="button"
-                              className={
-                                styles.moreButton
-                              }
-                              aria-label={`Actions for ${user.name}`}
-                              title="View details & actions"
-                              onClick={() =>
-                                handleViewDetails(user)
-                              }
-                            >
-                              •••
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6}>
-                        No users found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* PAGINATION */}
-            <footer className={styles.pagination}>
-              <div className={styles.pageSize}>
-                <span>{USERS_PER_PAGE}</span>
-                <span>⌄</span>
-                <span>per page</span>
-              </div>
-
-              <div className={styles.pageNavigation}>
-                <span
-                  className={styles.pageNumber}
-                >
-                  {safeCurrentPage}
-                </span>
-
-                <span>
-                  of {totalPages} pages
-                </span>
-
-                <button
-                  type="button"
-                  aria-label="Previous page"
-                  onClick={goToPreviousPage}
-                  disabled={
-                    safeCurrentPage === 1
-                  }
-                >
-                  ‹
-                </button>
-
-                <button
-                  type="button"
-                  aria-label="Next page"
-                  onClick={goToNextPage}
-                  disabled={
-                    safeCurrentPage === totalPages
-                  }
-                >
-                  ›
-                </button>
-              </div>
-            </footer>
-
-            {/* ADD USER */}
-            <AddUserModal
-              isOpen={isAddUserOpen}
-              onClose={() =>
-                setIsAddUserOpen(false)
-              }
-              onUserAdded={refreshUsers}
-            />
-
-            {/* EDIT USER */}
-            <EditUserModal
-              isOpen={isEditUserOpen}
-              user={selectedUser}
-              onClose={() => {
-                setIsEditUserOpen(false);
-                setSelectedUser(null);
-              }}
-              onUserUpdated={refreshUsers}
-            />
-
-            {/* USER DETAILS */}
-            {isDetailsOpen && selectedUser && (
+            {/* Add User Modal */}
+            {showAddModal && (
               <div
-                className={styles.detailsOverlay}
-                onMouseDown={() => {
-                  setIsDetailsOpen(false);
-                  setSelectedUser(null);
+                className={selStyles.modalOverlay}
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) setShowAddModal(false);
                 }}
+                role="dialog"
+                aria-modal="true"
               >
-                <div
-                  className={styles.detailsModal}
-                  onMouseDown={(e) =>
-                    e.stopPropagation()
-                  }
-                >
-                  <button
-                    type="button"
-                    className={styles.detailsClose}
-                    onClick={() => {
-                      setIsDetailsOpen(false);
-                      setSelectedUser(null);
-                    }}
-                    aria-label="Fermer"
-                  >
-                    ×
-                  </button>
-
-                  <h2>User details</h2>
-
-                  <div
-                    className={styles.detailsAvatar}
-                  >
-                    {selectedUser.name
-                      .charAt(0)
-                      .toUpperCase()}
-                  </div>
-
-                  <div
-                    className={
-                      styles.detailsName
-                    }
-                  >
-                    {selectedUser.name}
-                  </div>
-
-                  <div
-                    className={
-                      styles.detailsRole
-                    }
-                  >
-                    <span
-                      className={`${styles.role} ${
-                        selectedUser.roleType === "admin"
-                          ? styles.adminRole
-                          : selectedUser.roleType === "selector_rh" || selectedUser.role.includes("RH")
-                          ? styles.selectorRole
-                          : styles.devRole
-                      }`}
-                    >
-                      {selectedUser.role}
-                    </span>
-                  </div>
-
-                  <div
-                    className={
-                      styles.detailsGrid
-                    }
-                  >
-                    <div
-                      className={
-                        styles.detailsItem
-                      }
-                    >
-                      <span>Email</span>
-                      <strong>
-                        {selectedUser.email}
-                      </strong>
-                    </div>
-
-                    <div
-                      className={
-                        styles.detailsItem
-                      }
-                    >
-                      <span>Joined</span>
-                      <strong>
-                        {selectedUser.joined}
-                      </strong>
-                    </div>
-
-                    <div
-                      className={
-                        styles.detailsItem
-                      }
-                    >
-                      <span>Events selected</span>
-                      <strong>
-                        {selectedUser.roleType === "admin" ? "-" : selectedUser.events}
-                      </strong>
-                    </div>
-
-                    <div
-                      className={
-                        styles.detailsItem
-                      }
-                    >
-                      <span>
-                        Candidates selected
-                      </span>
-                      <strong>
-                        {selectedUser.roleType === "admin" ? "-" : selectedUser.candidates}
-                      </strong>
-                    </div>
-                  </div>
-
-                  <div className={styles.detailsActionsRow}>
+                <div className={selStyles.modalContent}>
+                  <div className={selStyles.modalHeader}>
+                    <h2 className={selStyles.modalTitle}>Nouvel utilisateur</h2>
                     <button
                       type="button"
-                      className={
-                        styles.detailsEditButton
-                      }
-                      onClick={() => {
-                        setIsDetailsOpen(false);
-                        setIsEditUserOpen(true);
-                      }}
+                      className={selStyles.modalCloseBtn}
+                      onClick={() => setShowAddModal(false)}
                     >
-                      Edit user
-                    </button>
-
-                    <button
-                      type="button"
-                      className={
-                        styles.detailsDeleteButton
-                      }
-                      onClick={() =>
-                        handleDeleteUser(selectedUser)
-                      }
-                    >
-                      Delete user
+                      ✕
                     </button>
                   </div>
+                  <form className={selStyles.modalBody} onSubmit={handleAddUser}>
+                    <label className={selStyles.fieldLabel}>
+                      Email *
+                      <input
+                        type="email"
+                        value={newEmail}
+                        onChange={(e) => setNewEmail(e.target.value)}
+                        placeholder="utilisateur@esi.dz"
+                        className={selStyles.eventSelect}
+                        required
+                        autoFocus
+                      />
+                    </label>
+                    <label className={selStyles.fieldLabel}>
+                      Nom complet
+                      <input
+                        type="text"
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        placeholder="Prénom Nom"
+                        className={selStyles.eventSelect}
+                      />
+                    </label>
+                    {addError && (
+                      <div
+                        style={{
+                          padding: "10px 14px",
+                          backgroundColor: "rgba(193, 51, 63, 0.06)",
+                          borderRadius: "10px",
+                          border: "1px solid rgba(193, 51, 63, 0.15)",
+                          color: "#7F1D1D",
+                          fontSize: "13px",
+                          fontWeight: 600,
+                        }}
+                        role="alert"
+                      >
+                        {addError}
+                      </div>
+                    )}
+                    <button
+                      type="submit"
+                      className={selStyles.importButton}
+                      disabled={adding}
+                    >
+                      {adding ? "Création..." : "Créer l'utilisateur"}
+                    </button>
+                  </form>
                 </div>
               </div>
             )}

@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import {
   CalendarIcon,
   UsersIcon,
+  UserCheckIcon,
   HistoryIcon,
   LogsIcon,
   LogoutIcon,
@@ -45,6 +46,13 @@ export function Sidebar({ isSuperAdmin, eventContext }: SidebarProps) {
       href: "/users",
       icon: UsersIcon,
       active: pathname === "/users",
+      rolesAllowed: "admin_only" as const,
+    },
+    {
+      name: "SELECTEURS",
+      href: "/selectors",
+      icon: UserCheckIcon,
+      active: pathname.startsWith("/selectors"),
       rolesAllowed: "admin_only" as const,
     },
     {
