@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
@@ -5,30 +6,43 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | null | undefined;
 };
 
-function getPrismaClient(): PrismaClient | null {
-  if (globalForPrisma.prisma !== undefined) {
+// In development, purge any stale in-memory singleton so regenerated schema takes effect
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = undefined;
+}
+
+function getPrismaClient(): PrismaClient {
+  if (globalForPrisma.prisma !== undefined && globalForPrisma.prisma !== null) {
     return globalForPrisma.prisma;
   }
   try {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
       console.warn("DATABASE_URL is not defined in environment variables.");
-      return null;
     }
-    const adapter = new PrismaPg({ connectionString });
-    const client = new PrismaClient({
-      adapter,
-      log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-    });
+    // Prisma will error on its own if connection string is missing/invalid when using pg adapter, or it might just use env variable directly if we don't pass adapter. But they're using PrismaPg.
+    // Let's just create it.
+    let client: PrismaClient
+    if (connectionString) {
+      const adapter = new PrismaPg({ connectionString });
+      client = new PrismaClient({ adapter, log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"] });
+    } else {
+      client = new PrismaClient({ log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"] });
+    }
     if (process.env.NODE_ENV !== "production") {
       globalForPrisma.prisma = client;
     }
     return client;
   } catch (error) {
     console.error("Failed to initialize Prisma Client:", error);
-    return null;
+    // Return a dummy client or throw error
+    throw error;
   }
 }
 
 export const prisma = getPrismaClient();
 
+export function resetPrismaClient(): PrismaClient {
+  globalForPrisma.prisma = undefined;
+  return getPrismaClient();
+}

@@ -10,12 +10,23 @@ import { CandidateDetail } from "@/services/candidateService";
 import { useAuth } from "@/context/AuthContext";
 import styles from "@/components/dashboard.module.css";
 import selStyles from "@/app/selectors/selectors.module.css";
+import { CandidateList } from "@/components/candidates/CandidateList";
 
 interface CandidaturesPageProps {
   params: Promise<{ id: string }>;
 }
 
 type FilterType = "all" | "to_review" | "accepte" | "refuse";
+
+// Simple deterministic color generator based on name
+function getAvatarColor(name: string) {
+  const colors = ['#0d9488', '#e11d48', '#2563eb', '#16a34a', '#d97706', '#7c3aed', '#c026d3'];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+}
 
 export default function CandidaturesPage({ params }: CandidaturesPageProps) {
   const resolvedParams = use(params);
@@ -55,7 +66,7 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
     return () => {
       isMounted = false;
     };
-  }, [eventId, refreshKey]);
+  }, [eventId, isAdmin]);
 
   const handleEvaluate = async (
     candidateId: number,
@@ -113,14 +124,50 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
   return (
     <DashboardLayout eventContext={{ id: eventId, name: eventName }}>
       {({ searchQuery, role }) => {
+        if (role === "SUPER_ADMIN" || isAdmin) {
+          return (
+            <div className={styles.mainCard}>
+              <div className={styles.mainHeader}>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <Link
+                      href={`/events/${eventId}`}
+                      className={styles.backLink}
+                      style={{ fontSize: "14px" }}
+                    >
+                      <ArrowLeftIcon />
+                      <span>Retour à l&apos;événement</span>
+                    </Link>
+                  </div>
+                  <h1 className={styles.pageTitle} style={{ marginTop: "6px" }}>
+                    Candidatures (Event #{eventId})
+                  </h1>
+                  <p style={{ fontSize: "13px", color: "#6B7280", marginTop: "2px" }}>
+                    Consultez les stories des candidats et soumettez vos évaluations.
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ marginTop: "20px" }}>
+                <CandidateList
+                  eventId={eventId}
+                  status="all"
+                  initialItems={[]}
+                  initialNextCursor={null}
+                  initialTotal={0}
+                  showStatusSwitch
+                  showDecisionControl={true}
+                  searchQuery={searchQuery}
+                  autoFetch={true}
+                />
+              </div>
+            </div>
+          );
+        }
 
         const currentSelectorType = role === "SELECTOR_RH" ? "RH" : "Technique";
         const currentSelectorName =
-          role === "SUPER_ADMIN"
-            ? "Super Admin"
-            : role === "SELECTOR_RH"
-            ? "Sélecteur RH"
-            : "Sélecteur Tech";
+          role === "SELECTOR_RH" ? "Sélecteur RH" : "Sélecteur Tech";
 
         const filteredCandidates = candidates.filter((cand) => {
           if (filter === "to_review" && cand.finalStatus !== "en_attente") return false;
@@ -240,7 +287,12 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
                     return (
                       <article key={cand.id} className={styles.candidatureCard}>
                         <div className={styles.candProfile}>
-                          <div className={styles.candAvatar}>{initials}</div>
+                          <div 
+                            className={styles.candAvatar}
+                            style={{ backgroundColor: getAvatarColor(`${cand.prenom} ${cand.nom}`) }}
+                          >
+                            {initials}
+                          </div>
                           <div className={styles.candNameGroup}>
                             <span className={styles.candName}>
                               {cand.prenom} {cand.nom}
@@ -327,4 +379,3 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
     </DashboardLayout>
   );
 }
-

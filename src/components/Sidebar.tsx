@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -30,6 +30,7 @@ interface SidebarProps {
 
 export function Sidebar({ isSuperAdmin, eventContext }: SidebarProps) {
   const pathname = usePathname();
+  const [isCandidatureOpen, setIsCandidatureOpen] = useState(true);
 
   // Navigation items when outside an event
   const globalNavItems = [
@@ -88,11 +89,15 @@ export function Sidebar({ isSuperAdmin, eventContext }: SidebarProps) {
       rolesAllowed: "admin_only" as const,
     },
     {
-      name: "Candidatures",
+      name: "Condidature",
       href: `/events/${eventId}/candidatures`,
-      icon: ClipboardIcon,
-      active: pathname === `/events/${eventId}/candidatures`,
+      icon: UsersIcon,
+      active: pathname.includes(`/events/${eventId}/candidatures`),
       rolesAllowed: "all" as const,
+      subItems: isSuperAdmin ? [
+        { name: "To be reviewed", href: `/events/${eventId}/candidatures/to-review` },
+        { name: "Decision status", href: `/events/${eventId}/candidatures/decisions` },
+      ] : []
     },
   ];
 
@@ -138,6 +143,43 @@ export function Sidebar({ isSuperAdmin, eventContext }: SidebarProps) {
               }
 
               const Icon = item.icon;
+              const itemWithSub = item as any;
+              const hasSubItems = itemWithSub.subItems && itemWithSub.subItems.length > 0;
+              
+              if (hasSubItems) {
+                return (
+                  <li key={item.name}>
+                    <div
+                      className={`${styles.navItem} ${item.active ? styles.navItemActive : ""}`}
+                      onClick={() => setIsCandidatureOpen(!isCandidatureOpen)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {item.active && <span className={styles.activeIndicator} />}
+                      <Icon className={item.active ? styles.activeIcon : ""} />
+                      <span>{item.name}</span>
+                      <span style={{ marginLeft: "auto", transform: isCandidatureOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', fontSize: '10px', color: item.active ? 'var(--color-primary-teal)' : 'inherit' }}>▼</span>
+                    </div>
+                    {isCandidatureOpen && (
+                      <div className={styles.subMenuContainer}>
+                        {itemWithSub.subItems?.map((sub: any) => {
+                          const isSubActive = pathname === sub.href;
+                          return (
+                            <Link 
+                              key={sub.name}
+                              href={sub.href} 
+                              className={`${styles.subMenuItem} ${isSubActive ? styles.subMenuItemActive : ""}`}
+                            >
+                              <div className={`${styles.subMenuDot} ${isSubActive ? styles.subMenuDotActive : ""}`} />
+                              <span>{sub.name}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </li>
+                );
+              }
+
               return (
                 <li key={item.name}>
                   <Link

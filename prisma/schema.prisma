@@ -8,10 +8,11 @@ datasource db {
 
 model User {
   id              Int                 @id @default(autoincrement())
-  googleId        String              @unique @map("google_id")
+  googleId        String?              @unique @map("google_id")
   email           String              @unique
   fullName        String?             @map("full_name")
   isSuperAdmin    Boolean             @default(false) @map("is_super_admin")
+  selectorType    SelectorType?       @map("selector_type")
   createdAt       DateTime            @default(now()) @map("created_at")
   lastLoginAt     DateTime?           @map("last_login_at")
   assignedBy      Assignment[]        @relation("AssignmentAssignedBy")
@@ -21,6 +22,7 @@ model User {
   createdEvents   Event[]             @relation("EventCreatedBy")
   exports         Export[]
   logs            Log[]
+  comments        EventComment[]
 
   @@map("users")
 }
@@ -44,6 +46,7 @@ model Event {
   selectors           EventSelector[]
   creator             User?                  @relation("EventCreatedBy", fields: [createdBy], references: [id])
   exports             Export[]
+  comments            EventComment[]
 
   @@map("events")
 }
@@ -68,7 +71,7 @@ model Candidate {
   email        String?
   telephone    String?
   extraData    Json?           @map("extra_data")
-  finalStatus  CandidateStatus @default(en_attente) @map("final_status")
+  finalStatus  CandidateStatus? @map("final_status")
   createdAt    DateTime        @default(now()) @map("created_at")
   assignments  Assignment[]
   event        Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
@@ -184,4 +187,18 @@ enum Decision {
   accepter
   rejeter
   en_attente
+}
+model EventComment {
+  id        Int      @id @default(autoincrement())
+  eventId   Int      @map("event_id")
+  userId    Int?     @map("user_id")
+  comment   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User? @relation(fields: [userId], references: [id])
+
+  @@index([eventId])
+  @@index([userId])
+  @@map("event_comments")
 }

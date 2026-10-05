@@ -63,19 +63,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    try {
-      const savedRole = localStorage.getItem(STORAGE_KEY) as UserRole | null;
-      if (savedRole && MOCK_PROFILES[savedRole]) {
-        setUser(MOCK_PROFILES[savedRole]);
-      } else {
-        setUser(null);
+    let cancelled = false;
+
+    async function checkSession() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          if (!cancelled && data.user) {
+            setUser(data.user);
+            return;
+          }
+        }
+
+        const savedRole = localStorage.getItem(STORAGE_KEY) as UserRole | null;
+        if (!cancelled && savedRole && MOCK_PROFILES[savedRole]) {
+          setUser(MOCK_PROFILES[savedRole]);
+        } else if (!cancelled) {
+          setUser(null);
+        }
+      } catch (e) {
+        console.error("Failed to check server session", e);
+        if (!cancelled) setUser(null);
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
-    } catch (e) {
-      console.error("Failed to read auth state from localStorage", e);
-      setUser(null);
-    } finally {
-      setIsLoading(false);
     }
+
+    checkSession();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const loginAs = (selectedRole: UserRole, redirectTo: string = "/") => {
@@ -91,14 +109,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = () => {
-    setUser(null);
+  const logout = async () => {
     try {
+      await fetch("/api/auth/logout", { method: "POST" });
       localStorage.removeItem(STORAGE_KEY);
     } catch (e) {
-      console.error("Failed to clear auth state from localStorage", e);
+      console.error("Failed to logout", e);
+    } finally {
+      setUser(null);
+      router.push("/login");
     }
-    router.push("/login");
   };
 
   return (

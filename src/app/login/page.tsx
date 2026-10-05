@@ -1,255 +1,233 @@
+
 "use client";
 
-import React, { Suspense } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useAuth, UserRole } from "@/context/AuthContext";
-import { ShieldIcon, UserCheckIcon, CodeIcon, ArrowRightIcon } from "@/components/Icons";
-import { ASSETS } from "@/lib/theme";
 import styles from "./login.module.css";
 
-function LoginContent() {
-  const { user, loginAs } = useAuth();
-  const searchParams = useSearchParams();
-  const returnUrl = searchParams.get("from") || "/";
+export default function LoginPage() {
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSelectRole = (role: UserRole) => {
-    loginAs(role, returnUrl);
+  const handleCredentialResponse = useCallback(
+    async (response: { credential: string }) => {
+      setIsLoading(true);
+      try {
+        const res = await fetch("/api/auth/google", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            credential: response.credential,
+          }),
+        });
+
+        if (res.ok) {
+          // Hard navigation ensures HttpOnly session cookie is committed and sent in headers
+          window.location.href = "/events";
+        } else {
+          setIsLoading(false);
+          const data = await res.json().catch(() => null);
+          alert(data?.error || "Échec de la connexion");
+        }
+      } catch (err) {
+        setIsLoading(false);
+        console.error("Login request error:", err);
+        alert("Erreur de connexion au serveur");
+      }
+    },
+    []
+  );
+
+  const isInitializedRef = useRef(false);
+  const handleCredentialResponseRef = useRef(handleCredentialResponse);
+  handleCredentialResponseRef.current = handleCredentialResponse;
+
+  const handleWrapperClick = () => {
+    if (isLoading) return;
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.prompt();
+    }
   };
 
-  return (
-    <div className={styles.loginWrapper}>
-      <div className={styles.loginCardContainer}>
-        {/* Header Section */}
-        <div className={styles.headerSection}>
-          <div className={styles.logoArea}>
-            <Image
-              src={ASSETS.logo}
-              alt="Club ETIC Logo"
-              width={42}
-              height={36}
-              style={{ objectFit: "contain" }}
-              priority
-            />
-            <span className={styles.brandTitle}>PLATFORM SELECTION</span>
-          </div>
+  useEffect(() => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
-          <div className={styles.tempBadge}>
-            <span>⚡ Mode Pré-Authentification</span>
-          </div>
+    if (!clientId) {
+      console.warn(
+        "NEXT_PUBLIC_GOOGLE_CLIENT_ID is not set in .env. Google login requires this key."
+      );
+      return;
+    }
 
-          <h1 className={styles.mainTitle}>Choisissez votre profil d'accès</h1>
-          <p className={styles.subtitle}>
-            Sélectionnez votre rôle pour entrer directement sur la plateforme sans saisir d'identifiants.
-          </p>
-        </div>
+    const renderGoogleButton = () => {
+      if (!buttonRef.current || !window.google?.accounts?.id) return;
 
-        {/* Temporary Notice Banner */}
-        <div className={styles.noticeBanner}>
-          <div style={{ fontSize: "20px", flexShrink: 0 }}>ℹ️</div>
-          <p className={styles.noticeText}>
-            <strong>Page de connexion temporaire :</strong> Aucun mot de passe n'est requis. Cliquez sur le rôle de votre choix pour simuler la session correspondante. Le module de connexion définitif et le backend seront intégrés ultérieurement.
-          </p>
-        </div>
-
-        {/* Role Cards Grid */}
-        <div className={styles.cardsGrid}>
-          {/* Card 1: Admin */}
-          <div
-            className={`${styles.roleCard} ${styles.cardAdmin}`}
-            onClick={() => handleSelectRole("SUPER_ADMIN")}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") handleSelectRole("SUPER_ADMIN");
-            }}
-          >
-            <div>
-              <div className={styles.cardHeader}>
-                <div className={`${styles.iconContainer} ${styles.iconAdmin}`}>
-                  <ShieldIcon className="w-6 h-6" />
-                </div>
-                <span className={styles.cardBadge}>Accès Total</span>
-              </div>
-
-              <h2 className={styles.roleName}>Admin</h2>
-              <p className={styles.roleSubtitle}>
-                Supervision globale, gestion des événements, assignation des sélecteurs et logs.
-              </p>
-
-              <ul className={styles.featureList}>
-                <li className={styles.featureItem}>
-                  <span className={styles.checkDot} />
-                  <span>Gestion des événements & paramètres</span>
-                </li>
-                <li className={styles.featureItem}>
-                  <span className={styles.checkDot} />
-                  <span>Attribution et suivi des sélecteurs</span>
-                </li>
-                <li className={styles.featureItem}>
-                  <span className={styles.checkDot} />
-                  <span>Accès aux journaux d'audit (Logs)</span>
-                </li>
-                <li className={styles.featureItem}>
-                  <span className={styles.checkDot} />
-                  <span>Vue et gestion de toutes les candidatures</span>
-                </li>
-              </ul>
-            </div>
-
-            <button
-              type="button"
-              className={styles.actionButton}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSelectRole("SUPER_ADMIN");
-              }}
-            >
-              <span>Se connecter comme Admin</span>
-              <ArrowRightIcon className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Card 2: Sélecteur RH */}
-          <div
-            className={`${styles.roleCard} ${styles.cardRh}`}
-            onClick={() => handleSelectRole("SELECTOR_RH")}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") handleSelectRole("SELECTOR_RH");
-            }}
-          >
-            <div>
-              <div className={styles.cardHeader}>
-                <div className={`${styles.iconContainer} ${styles.iconRh}`}>
-                  <UserCheckIcon className="w-6 h-6" />
-                </div>
-                <span className={styles.cardBadge}>Pôle RH</span>
-              </div>
-
-              <h2 className={styles.roleName}>Sélecteur RH</h2>
-              <p className={styles.roleSubtitle}>
-                Évaluation du profil, parcours, motivation et soft skills des candidats.
-              </p>
-
-              <ul className={styles.featureList}>
-                <li className={styles.featureItem}>
-                  <span className={styles.checkDot} />
-                  <span>Consultation des dossiers candidats</span>
-                </li>
-                <li className={styles.featureItem}>
-                  <span className={styles.checkDot} />
-                  <span>Visualisation des vidéos & stories</span>
-                </li>
-                <li className={styles.featureItem}>
-                  <span className={styles.checkDot} />
-                  <span>Évaluations & annotations RH</span>
-                </li>
-                <li className={styles.featureItem}>
-                  <span className={styles.checkDot} />
-                  <span>Validation & décisions RH</span>
-                </li>
-              </ul>
-            </div>
-
-            <button
-              type="button"
-              className={styles.actionButton}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSelectRole("SELECTOR_RH");
-              }}
-            >
-              <span>Se connecter comme Sélecteur RH</span>
-              <ArrowRightIcon className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Card 3: Sélecteur Dev */}
-          <div
-            className={`${styles.roleCard} ${styles.cardDev}`}
-            onClick={() => handleSelectRole("SELECTOR_TECHNIQUE")}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") handleSelectRole("SELECTOR_TECHNIQUE");
-            }}
-          >
-            <div>
-              <div className={styles.cardHeader}>
-                <div className={`${styles.iconContainer} ${styles.iconDev}`}>
-                  <CodeIcon className="w-6 h-6" />
-                </div>
-                <span className={styles.cardBadge}>Pôle Technique</span>
-              </div>
-
-              <h2 className={styles.roleName}>Sélecteur Dev</h2>
-              <p className={styles.roleSubtitle}>
-                Évaluation des compétences techniques, code, projets et logique de développement.
-              </p>
-
-              <ul className={styles.featureList}>
-                <li className={styles.featureItem}>
-                  <span className={styles.checkDot} />
-                  <span>Évaluation technique & compétences dev</span>
-                </li>
-                <li className={styles.featureItem}>
-                  <span className={styles.checkDot} />
-                  <span>Revue des projets et liens GitHub</span>
-                </li>
-                <li className={styles.featureItem}>
-                  <span className={styles.checkDot} />
-                  <span>Notation technique et feedbacks</span>
-                </li>
-                <li className={styles.featureItem}>
-                  <span className={styles.checkDot} />
-                  <span>Validation des critères techniques</span>
-                </li>
-              </ul>
-            </div>
-
-            <button
-              type="button"
-              className={styles.actionButton}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSelectRole("SELECTOR_TECHNIQUE");
-              }}
-            >
-              <span>Se connecter comme Sélecteur Dev</span>
-              <ArrowRightIcon className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Already logged in indicator */}
-        {user && (
-          <div className={styles.activeIndicatorBanner}>
-            <span>
-              Connecté actuellement : <strong>{user.name}</strong> ({user.roleTitle})
-            </span>
-            <Link href={returnUrl} className={styles.continueLink}>
-              Continuer vers l'application →
-            </Link>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense
-      fallback={
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-          <p>Chargement du portail...</p>
-        </div>
+      // Ensure google.accounts.id.initialize is called strictly once
+      if (!isInitializedRef.current) {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: (response: { credential: string }) => {
+            handleCredentialResponseRef.current(response);
+          },
+        });
+        isInitializedRef.current = true;
       }
-    >
-      <LoginContent />
-    </Suspense>
+
+      // Clear any duplicate child nodes/iframes before rendering
+      buttonRef.current.innerHTML = "";
+
+      window.google.accounts.id.renderButton(buttonRef.current, {
+        theme: "outline",
+        size: "large",
+        text: "continue_with",
+        shape: "rectangular",
+        width: 400,
+        logo_alignment: "left",
+      });
+    };
+
+    if (window.google?.accounts?.id) {
+      renderGoogleButton();
+      return;
+    }
+
+    const SCRIPT_ID = "google-gsi-client-script";
+    let script = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
+
+    if (!script) {
+      script = document.createElement("script");
+      script.id = SCRIPT_ID;
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.onload = renderGoogleButton;
+      document.body.appendChild(script);
+    } else {
+      script.addEventListener("load", renderGoogleButton);
+    }
+
+    return () => {
+      if (script) {
+        script.removeEventListener("load", renderGoogleButton);
+      }
+    };
+  }, []);
+
+  return (
+    <main className={styles.page}>
+
+      {/* Background circle */}
+      <div className={styles.backgroundCircle} />
+
+      {/* Top-left decorations */}
+      <Image
+        src="/Flip the card.svg"
+        alt=""
+        width={248}
+        height={182}
+        className={styles.flipCard}
+        priority
+      />
+
+      <Image
+        src="/Make the decision.svg"
+        alt=""
+        width={267}
+        height={195}
+        className={styles.makeDecision}
+        priority
+      />
+      <Image
+        src="/vector 39.svg"
+        alt=""
+        width={267}
+        height={195}
+        className={styles.vector39}
+        priority
+      />
+
+      {/* Top-right decoration */}
+      <Image
+        src="/Layer 25.svg"
+        alt=""
+        width={476}
+        height={497}
+        className={styles.layer25}
+        priority
+      />
+
+      {/* Bottom-left decoration */}
+      <Image
+        src="/group 90.png"
+        alt=""
+        width={564}
+        height={513}
+        className={styles.group90}
+        priority
+      />
+
+      {/* Login */}
+      <section className={styles.loginContent}>
+
+        <Image
+          src="/logo etic.svg"
+          alt="ETIC"
+          width={204}
+          height={175}
+          className={styles.logo}
+          priority
+        />
+
+        <h1 className={styles.title}>
+          <span className={styles.welcome}>
+            WELCOME TO
+          </span>
+
+          <span className={styles.platformSelection}>
+            ETIC PLATFORM
+            <br />
+            SELECTION
+          </span>
+        </h1>
+
+        {/* Google Sign-In Button */}
+        <div
+          className={styles.googleWrapper}
+          onClick={handleWrapperClick}
+        >
+          <div className={styles.customGoogleButton}>
+            <Image
+              src="/google-icon.svg"
+              alt="Google"
+              width={24}
+              height={24}
+              className={styles.googleIcon}
+            />
+            <span>Continue with Google</span>
+          </div>
+
+          <div
+            ref={buttonRef}
+            className={styles.realGoogleButton}
+          />
+
+          {isLoading && (
+            <div className={styles.loadingOverlay}>
+              <div className={styles.spinner} />
+              <span>Connexion en cours...</span>
+            </div>
+          )}
+        </div>
+
+        <p className={styles.hint}>
+          Sign in with your Google account to proceed.
+          <br />
+          Your role permissions are automatically applied upon login.
+        </p>
+
+      </section>
+
+    </main>
   );
 }

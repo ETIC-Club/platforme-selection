@@ -12,6 +12,17 @@ export async function GET() {
 
   try {
     // 1. Create or upsert Users (Admin + Selectors)
+    const admaneAdmin = await prisma.user.upsert({
+      where: { email: "admaneo99@gmail.com" },
+      update: { fullName: "Admane Oussama", isSuperAdmin: true },
+      create: {
+        googleId: "google-admane-99",
+        email: "admaneo99@gmail.com",
+        fullName: "Admane Oussama",
+        isSuperAdmin: true,
+      },
+    });
+
     const admin = await prisma.user.upsert({
       where: { email: "admin@etic-club.net" },
       update: { fullName: "Admin ETIC", isSuperAdmin: true },
@@ -20,6 +31,24 @@ export async function GET() {
         email: "admin@etic-club.net",
         fullName: "Admin ETIC",
         isSuperAdmin: true,
+      },
+    });
+
+    const esiAdmin = await prisma.user.upsert({
+      where: { email: "om_admane@esi.dz" },
+      update: { fullName: "Admane Oussama", isSuperAdmin: true },
+      create: {
+        googleId: "google-admane-esi",
+        email: "om_admane@esi.dz",
+        fullName: "Admane Oussama",
+        isSuperAdmin: true,
+      },
+    });
+
+    // Ensure admins NEVER have event selector assignments ("the admin doesn't do selection")
+    await prisma.eventSelector.deleteMany({
+      where: {
+        userId: { in: [admaneAdmin.id, admin.id, esiAdmin.id] },
       },
     });
 
@@ -71,7 +100,7 @@ export async function GET() {
         description: "Hackathon et camp de sélection annuel du Club ETIC",
         quotaParticipants: 60,
         status: "en_cours",
-        createdBy: admin.id,
+        createdBy: admaneAdmin.id,
       },
       create: {
         id: 1,
@@ -79,7 +108,7 @@ export async function GET() {
         description: "Hackathon et camp de sélection annuel du Club ETIC",
         quotaParticipants: 60,
         status: "en_cours",
-        createdBy: admin.id,
+        createdBy: admaneAdmin.id,
       },
     });
 
@@ -87,63 +116,84 @@ export async function GET() {
     await prisma.event.upsert({
       where: { id: 101 },
       update: {
-        name: "HACKATHON ETIC XII",
+        name: "Event 1 - HACKATHON ETIC XII",
         description: "Édition précédente du hackathon national ETIC",
         quotaParticipants: 50,
         status: "termine",
         closedAt: new Date("2026-01-15T23:59:59Z"),
-        createdBy: admin.id,
+        createdBy: admaneAdmin.id,
       },
       create: {
         id: 101,
-        name: "HACKATHON ETIC XII",
+        name: "Event 1 - HACKATHON ETIC XII",
         description: "Édition précédente du hackathon national ETIC",
         quotaParticipants: 50,
         status: "termine",
         closedAt: new Date("2026-01-15T23:59:59Z"),
-        createdBy: admin.id,
+        createdBy: admaneAdmin.id,
       },
     });
 
     await prisma.event.upsert({
       where: { id: 102 },
       update: {
-        name: "DESIGN SPRINT BOOTCAMP",
+        name: "Event 2 - DESIGN SPRINT BOOTCAMP",
         description: "Camp intensif de formation et sélection UI/UX",
         quotaParticipants: 30,
         status: "termine",
         closedAt: new Date("2025-11-20T18:00:00Z"),
-        createdBy: admin.id,
+        createdBy: admaneAdmin.id,
       },
       create: {
         id: 102,
-        name: "DESIGN SPRINT BOOTCAMP",
+        name: "Event 2 - DESIGN SPRINT BOOTCAMP",
         description: "Camp intensif de formation et sélection UI/UX",
         quotaParticipants: 30,
         status: "termine",
         closedAt: new Date("2025-11-20T18:00:00Z"),
-        createdBy: admin.id,
+        createdBy: admaneAdmin.id,
       },
     });
 
     await prisma.event.upsert({
       where: { id: 103 },
       update: {
-        name: "SELECTION CAMP 2024",
+        name: "Event 3 - SELECTION CAMP 2024",
         description: "Recrutement des nouveaux membres ETIC 2024",
         quotaParticipants: 45,
         status: "termine",
         closedAt: new Date("2024-09-10T18:00:00Z"),
-        createdBy: admin.id,
+        createdBy: admaneAdmin.id,
       },
       create: {
         id: 103,
-        name: "SELECTION CAMP 2024",
+        name: "Event 3 - SELECTION CAMP 2024",
         description: "Recrutement des nouveaux membres ETIC 2024",
         quotaParticipants: 45,
         status: "termine",
         closedAt: new Date("2024-09-10T18:00:00Z"),
-        createdBy: admin.id,
+        createdBy: admaneAdmin.id,
+      },
+    });
+
+    await prisma.event.upsert({
+      where: { id: 104 },
+      update: {
+        name: "Event 4 - TECH CHALLENGE 2023",
+        description: "Hackathon de programmation compétitive",
+        quotaParticipants: 40,
+        status: "termine",
+        closedAt: new Date("2023-12-05T18:00:00Z"),
+        createdBy: admaneAdmin.id,
+      },
+      create: {
+        id: 104,
+        name: "Event 4 - TECH CHALLENGE 2023",
+        description: "Hackathon de programmation compétitive",
+        quotaParticipants: 40,
+        status: "termine",
+        closedAt: new Date("2023-12-05T18:00:00Z"),
+        createdBy: admaneAdmin.id,
       },
     });
 
@@ -175,7 +225,7 @@ export async function GET() {
       });
     }
 
-    // 5. Create Candidate & Assignment
+    // 5. Create Candidate & Assignment for Active Event
     const candidate = await prisma.candidate.upsert({
       where: {
         eventId_csvRowNumber: {
@@ -189,6 +239,11 @@ export async function GET() {
         email: "oi_moktefi@esi.dz",
         telephone: "+213 555 12 34 56",
         finalStatus: "accepte",
+        extraData: {
+          education: "ESI (Ex-INI) - 1CS Ingénierie Logicielle",
+          bio: "Passionnée par le clean code, le web fullstack et les architectures cloud.",
+          competences: ["TypeScript", "Next.js", "React", "PostgreSQL", "Docker"],
+        },
       },
       create: {
         eventId: activeEvent.id,
@@ -198,8 +253,115 @@ export async function GET() {
         email: "oi_moktefi@esi.dz",
         telephone: "+213 555 12 34 56",
         finalStatus: "accepte",
+        extraData: {
+          education: "ESI (Ex-INI) - 1CS Ingénierie Logicielle",
+          bio: "Passionnée par le clean code, le web fullstack et les architectures cloud.",
+          competences: ["TypeScript", "Next.js", "React", "PostgreSQL", "Docker"],
+        },
       },
     });
+
+    const activeRhSel = await prisma.eventSelector.findFirst({
+      where: { eventId: activeEvent.id, selectorType: "RH" },
+    });
+    if (activeRhSel) {
+      const a = await prisma.assignment.upsert({
+        where: {
+          candidateId_eventSelectorId: {
+            candidateId: candidate.id,
+            eventSelectorId: activeRhSel.id,
+          },
+        },
+        update: {},
+        create: {
+          candidateId: candidate.id,
+          eventSelectorId: activeRhSel.id,
+          assignedBy: admaneAdmin.id,
+        },
+      });
+      await prisma.evaluation.upsert({
+        where: { assignmentId: a.id },
+        update: { decision: "accepter", comment: "Excellente motivation et communication." },
+        create: { assignmentId: a.id, decision: "accepter", comment: "Excellente motivation et communication." },
+      });
+    }
+
+    // 5b. History Event Candidates & Evaluations
+    const historyEventIds = [101, 102, 103, 104];
+    for (const hId of historyEventIds) {
+      const hSel = await prisma.eventSelector.upsert({
+        where: {
+          eventId_userId_selectorType: {
+            eventId: hId,
+            userId: rh1.id,
+            selectorType: "RH",
+          },
+        },
+        update: {},
+        create: {
+          eventId: hId,
+          userId: rh1.id,
+          selectorType: "RH",
+          addedBy: admaneAdmin.id,
+        },
+      });
+
+      for (let i = 1; i <= 3; i++) {
+        const hCand = await prisma.candidate.upsert({
+          where: {
+            eventId_csvRowNumber: {
+              eventId: hId,
+              csvRowNumber: i,
+            },
+          },
+          update: {
+            nom: `Candidat${i}`,
+            prenom: `Event${hId - 100}`,
+            email: `cand${i}_ev${hId}@example.com`,
+            finalStatus: i === 3 ? "refuse" : "accepte",
+          },
+          create: {
+            eventId: hId,
+            csvRowNumber: i,
+            nom: `Candidat${i}`,
+            prenom: `Event${hId - 100}`,
+            email: `cand${i}_ev${hId}@example.com`,
+            finalStatus: i === 3 ? "refuse" : "accepte",
+            extraData: { education: "Université Algérienne" },
+          },
+        });
+
+        const hAssign = await prisma.assignment.upsert({
+          where: {
+            candidateId_eventSelectorId: {
+              candidateId: hCand.id,
+              eventSelectorId: hSel.id,
+            },
+          },
+          update: {},
+          create: {
+            candidateId: hCand.id,
+            eventSelectorId: hSel.id,
+            assignedBy: admaneAdmin.id,
+          },
+        });
+
+        await prisma.evaluation.upsert({
+          where: { assignmentId: hAssign.id },
+          update: {
+            decision: i === 3 ? "rejeter" : "accepter",
+            comment: i === 3 ? "Compétences insuffisantes" : "Excellent profil retenu",
+            evaluatedAt: new Date(),
+          },
+          create: {
+            assignmentId: hAssign.id,
+            decision: i === 3 ? "rejeter" : "accepter",
+            comment: i === 3 ? "Compétences insuffisantes" : "Excellent profil retenu",
+            evaluatedAt: new Date(),
+          },
+        });
+      }
+    }
 
     // 6. Insert Logs
     const sampleLogs = [
@@ -251,8 +413,11 @@ export async function GET() {
       await prisma.log.create({ data: log });
     }
 
+    const ev101Count = await prisma.candidate.count({ where: { eventId: 101 } });
+
     return NextResponse.json({
       success: true,
+      ev101Candidates: ev101Count,
       message: "Database seeded successfully with Users, Selectors, Events, History, Assignments, and Logs!",
     });
   } catch (err: unknown) {
