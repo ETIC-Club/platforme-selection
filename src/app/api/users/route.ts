@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     if (!prisma) {
       return NextResponse.json(
@@ -10,6 +10,10 @@ export async function GET() {
         { status: 500 }
       );
     }
+
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search")?.toLowerCase().trim();
+    const typeFilter = searchParams.get("type")?.toLowerCase().trim();
 
     const users = await prisma.user.findMany({
       include: {
@@ -83,7 +87,30 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json(formattedUsers);
+    let filtered = formattedUsers;
+    if (search) {
+      filtered = filtered.filter(
+        (u) =>
+          u.name.toLowerCase().includes(search) ||
+          u.email.toLowerCase().includes(search)
+      );
+    }
+    if (typeFilter && typeFilter !== "all" && typeFilter !== "tous") {
+      filtered = filtered.filter((u) => {
+        if (typeFilter === "dev" || typeFilter === "technique") {
+          return u.roleType === "selector_dev" || u.role.toLowerCase().includes("dev");
+        }
+        if (typeFilter === "rh") {
+          return u.roleType === "selector_rh" || u.role.toLowerCase().includes("rh");
+        }
+        return (
+          u.roleType.toLowerCase() === typeFilter ||
+          u.role.toLowerCase().includes(typeFilter)
+        );
+      });
+    }
+
+    return NextResponse.json(filtered);
   } catch (error) {
     console.error("GET /api/users error:", error);
 

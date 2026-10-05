@@ -1,320 +1,541 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { PlusIcon } from "@/components/Icons";
-import { useAuth } from "@/context/AuthContext";
-import styles from "@/components/dashboard.module.css";
-import selStyles from "@/app/selectors/selectors.module.css";
+import AddUserModal from "../admin/users/AddUserModal";
+import EditUserModal from "./EditUserModal";
+import styles from "../admin/users/users.module.css";
 
-interface UserItem {
+type User = {
   id: number;
+  name: string;
   email: string;
-  fullName: string | null;
-  isSuperAdmin: boolean;
-  createdAt: string;
-  _count: { eventSelectors: number };
-}
+  joined: string;
+  events: number;
+  candidates: number;
+  role: string;
+  roleType: string;
+};
+
+const USERS_PER_PAGE = 10;
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<UserItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
 
-  // Add user form state
-  const [newEmail, setNewEmail] = useState("");
-  const [newName, setNewName] = useState("");
-  const [addError, setAddError] = useState<string | null>(null);
-  const [adding, setAdding] = useState(false);
+  const [isEditUserOpen, setIsEditUserOpen] = useState(false);
 
-  const { user: authUser } = useAuth();
-  const isAdmin = authUser?.role === "SUPER_ADMIN";
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
-    async function loadUsers() {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/users?limit=100");
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted) {
-            setUsers(data.users || []);
-            setTotal(data.total || 0);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to load users:", err);
-      } finally {
-        if (isMounted) setLoading(false);
+  const [selectedUser, setSelectedUser] =
+    useState<User | null>(null);
+
+  const [users, setUsers] = useState<User[]>([]);
+
+  const [activeFilter, setActiveFilter] = useState("All");
+
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const [openMenuId, setOpenMenuId] = useState<number | null>(
+    null
+  );
+
+  const refreshUsers = async () => {
+    try {
+      const response = await fetch("/api/users");
+
+      if (!response.ok) {
+        throw new Error("Failed to load users.");
       }
+
+      const data = await response.json();
+
+      setUsers(data);
+    } catch (error) {
+      console.error("Error loading users:", error);
+      alert("Failed to load users.");
     }
+  };
 
-    loadUsers();
-    return () => { isMounted = false; };
-  }, [refreshKey]);
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setOpenMenuId(null);
+    setIsEditUserOpen(true);
+  };
 
-  const handleAddUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAddError(null);
+  const handleViewDetails = (user: User) => {
+    setSelectedUser(user);
+    setOpenMenuId(null);
+    setIsDetailsOpen(true);
+  };
 
-    const trimmedEmail = newEmail.trim().toLowerCase();
-    if (!trimmedEmail) {
-      setAddError("L'email est requis.");
+  const handleDeleteUser = async (user: User) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${user.name}?`
+    );
+
+    if (!confirmed) {
       return;
     }
 
-    setAdding(true);
     try {
-      const res = await fetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: trimmedEmail,
-          fullName: newName.trim() || null,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setAddError(data.error || "Erreur lors de la création.");
+      const response = await fetch(
+        `/api/users?id=${user.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+
+        alert(data.error || "Failed to delete user.");
         return;
       }
-      setNewEmail("");
-      setNewName("");
-      setShowAddModal(false);
-      setRefreshKey((k) => k + 1);
-    } catch {
-      setAddError("Erreur réseau.");
-    } finally {
-      setAdding(false);
-    }
-  };
 
-  const handleDelete = async (userId: number, email: string) => {
-    if (!confirm(`Supprimer l'utilisateur ${email} ?`)) return;
+      setOpenMenuId(null);
 
-    try {
-      const res = await fetch(`/api/users/${userId}`, { method: "DELETE" });
-      if (res.ok) {
-        setRefreshKey((k) => k + 1);
-      } else {
-        const data = await res.json().catch(() => ({}));
-        alert(data.error || "Erreur lors de la suppression.");
+      if (selectedUser?.id === user.id) {
+        setSelectedUser(null);
+        setIsDetailsOpen(false);
+        setIsEditUserOpen(false);
       }
+
+      await refreshUsers();
     } catch {
-      alert("Erreur réseau.");
+      alert("An error occurred while deleting the user.");
     }
   };
 
-  const getInitials = (name: string | null, email: string): string => {
-    const src = name || email;
-    return src
-      .split(/[\s@]/)
-      .map((n) => n[0])
-      .filter(Boolean)
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
+  useEffect(() => {
+    refreshUsers();
+  }, []);
+
+  const handleFilterChange = (filter: string) => {
+    setActiveFilter(filter);
+    setCurrentPage(1);
+  };
+
+  const getRoleBadgeClass = (user: User) => {
+    const roleType = (user.roleType || "").toLowerCase();
+    const role = (user.role || "").toLowerCase();
+
+    if (roleType === "admin" || role.includes("admin")) {
+      return styles.adminRole;
+    }
+    if (roleType === "selector_rh" || role.includes("rh")) {
+      return styles.rhRole;
+    }
+    if (
+      roleType === "selector_dev" ||
+      roleType === "dev" ||
+      role.includes("dev")
+    ) {
+      return styles.devRole;
+    }
+    return styles.selectorRole;
   };
 
   return (
     <DashboardLayout>
       {({ searchQuery }) => {
-        if (!isAdmin) {
-          return (
-            <div className={styles.mainCard}>
-              <div className={selStyles.emptyState}>
-                <div className={selStyles.emptyTitle}>Accès réservé</div>
-                <div className={selStyles.emptySubtitle}>
-                  Seuls les administrateurs peuvent gérer les utilisateurs.
-                </div>
-              </div>
-            </div>
-          );
-        }
+        const filteredUsers = users.filter((user) => {
+          const roleType = (user.roleType || "").toLowerCase();
+          const role = (user.role || "").toLowerCase();
 
-        const filtered = users.filter((u) => {
-          if (!searchQuery.trim()) return true;
-          const q = searchQuery.toLowerCase();
-          return (
-            u.email.toLowerCase().includes(q) ||
-            (u.fullName || "").toLowerCase().includes(q)
-          );
+          const matchesRole =
+            activeFilter === "All" ||
+            (activeFilter === "Admins" &&
+              (roleType === "admin" || role.includes("admin"))) ||
+            (activeFilter === "RH" &&
+              (roleType === "selector_rh" || role.includes("rh"))) ||
+            (activeFilter === "Devs" &&
+              (roleType === "selector_dev" ||
+                roleType === "dev" ||
+                role.includes("dev"))) ||
+            (activeFilter === "Selectors" &&
+              (roleType.includes("selector") ||
+                role.includes("sélecteur")));
+
+          const search = searchQuery.trim().toLowerCase();
+
+          const matchesSearch =
+            !search ||
+            user.name.toLowerCase().includes(search) ||
+            user.email.toLowerCase().includes(search) ||
+            user.role.toLowerCase().includes(search);
+
+          return matchesRole && matchesSearch;
         });
 
+        const totalPages = Math.max(
+          1,
+          Math.ceil(
+            filteredUsers.length / USERS_PER_PAGE
+          )
+        );
+
+        const safeCurrentPage = Math.min(
+          currentPage,
+          totalPages
+        );
+
+        const startIndex =
+          (safeCurrentPage - 1) * USERS_PER_PAGE;
+
+        const paginatedUsers = filteredUsers.slice(
+          startIndex,
+          startIndex + USERS_PER_PAGE
+        );
+
+        const goToPreviousPage = () => {
+          setCurrentPage((page) =>
+            Math.max(1, page - 1)
+          );
+        };
+
+        const goToNextPage = () => {
+          setCurrentPage((page) =>
+            Math.min(totalPages, page + 1)
+          );
+        };
+
         return (
-          <div className={styles.mainCard}>
-            <div className={styles.mainHeader}>
-              <h1 className={styles.pageTitle}>
-                USERS ({loading ? "…" : total})
-              </h1>
+          <div className={styles.mainContent}>
+            {/* HEADER */}
+            <div className={styles.pageHeader}>
+              <div>
+                <h1>User&apos;s overview</h1>
+              </div>
+
               <button
                 type="button"
-                className={styles.addEventBtn}
-                onClick={() => {
-                  setShowAddModal(true);
-                  setAddError(null);
-                }}
+                className={styles.addButton}
+                onClick={() =>
+                  setIsAddUserOpen(true)
+                }
               >
-                <PlusIcon />
-                <span>ADD USER</span>
+                ADD USER
+                <span>+</span>
               </button>
             </div>
 
-            <div className={styles.eventsList}>
-              {loading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className={selStyles.skeletonCard}>
-                    <div className={`${selStyles.skeletonPulse} ${selStyles.skeletonAvatar}`} />
-                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <div className={`${selStyles.skeletonPulse} ${selStyles.skeletonText}`} style={{ width: "180px" }} />
-                      <div className={`${selStyles.skeletonPulse} ${selStyles.skeletonText} ${selStyles.skeletonTextShort}`} />
-                    </div>
-                  </div>
-                ))
-              ) : filtered.length === 0 ? (
-                <div className={selStyles.emptyState}>
-                  <div className={selStyles.emptyTitle}>Aucun utilisateur</div>
-                  <div className={selStyles.emptySubtitle}>
-                    {searchQuery
-                      ? "Aucun utilisateur ne correspond à votre recherche."
-                      : "Ajoutez des utilisateurs avec le bouton ci-dessus."}
-                  </div>
-                </div>
-              ) : (
-                filtered.map((u) => (
-                  <article key={u.id} className={styles.itemCard}>
-                    <div className={styles.candProfile}>
-                      <div className={selStyles.selectorAvatar}>
-                        {getInitials(u.fullName, u.email)}
-                      </div>
-                      <div className={styles.candNameGroup}>
-                        <span className={styles.candName}>
-                          {u.fullName || u.email}
-                        </span>
-                        <span className={styles.candEmail}>{u.email}</span>
-                      </div>
-                    </div>
-
-                    <span style={{ fontSize: "12px", color: "#8C8F8E" }}>
-                      {u._count.eventSelectors} événement{u._count.eventSelectors !== 1 ? "s" : ""}
-                    </span>
-
-                    {u.isSuperAdmin && (
-                      <span
-                        style={{
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          padding: "3px 10px",
-                          borderRadius: "20px",
-                          background: "rgba(74, 222, 128, 0.12)",
-                          color: "var(--color-primary-green)",
-                        }}
-                      >
-                        Admin
-                      </span>
-                    )}
-
-                    <span style={{ fontSize: "12px", color: "#8C8F8E" }}>
-                      {new Date(u.createdAt).toLocaleDateString("fr-FR", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </span>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(u.id, u.email)}
-                      style={{
-                        background: "rgba(193, 51, 63, 0.08)",
-                        border: "none",
-                        borderRadius: "8px",
-                        padding: "6px 12px",
-                        fontSize: "12px",
-                        fontWeight: 700,
-                        color: "#C1333F",
-                        cursor: "pointer",
-                      }}
-                      aria-label={`Supprimer ${u.email}`}
-                    >
-                      ✕ Supprimer
-                    </button>
-                  </article>
-                ))
+            {/* FILTERS */}
+            <div className={styles.filters}>
+              {["All", "Admins", "RH", "Devs"].map(
+                (filter) => (
+                  <button
+                    key={filter}
+                    type="button"
+                    className={
+                      activeFilter === filter
+                        ? styles.filterActive
+                        : undefined
+                    }
+                    onClick={() =>
+                      handleFilterChange(filter)
+                    }
+                  >
+                    {filter}
+                  </button>
+                )
               )}
             </div>
 
-            {/* Add User Modal */}
-            {showAddModal && (
-              <div
-                className={selStyles.modalOverlay}
-                onClick={(e) => {
-                  if (e.target === e.currentTarget) setShowAddModal(false);
-                }}
-                role="dialog"
-                aria-modal="true"
-              >
-                <div className={selStyles.modalContent}>
-                  <div className={selStyles.modalHeader}>
-                    <h2 className={selStyles.modalTitle}>Nouvel utilisateur</h2>
-                    <button
-                      type="button"
-                      className={selStyles.modalCloseBtn}
-                      onClick={() => setShowAddModal(false)}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                  <form className={selStyles.modalBody} onSubmit={handleAddUser}>
-                    <label className={selStyles.fieldLabel}>
-                      Email *
-                      <input
-                        type="email"
-                        value={newEmail}
-                        onChange={(e) => setNewEmail(e.target.value)}
-                        placeholder="utilisateur@esi.dz"
-                        className={selStyles.eventSelect}
-                        required
-                        autoFocus
-                      />
-                    </label>
-                    <label className={selStyles.fieldLabel}>
-                      Nom complet
-                      <input
-                        type="text"
-                        value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
-                        placeholder="Prénom Nom"
-                        className={selStyles.eventSelect}
-                      />
-                    </label>
-                    {addError && (
-                      <div
-                        style={{
-                          padding: "10px 14px",
-                          backgroundColor: "rgba(193, 51, 63, 0.06)",
-                          borderRadius: "10px",
-                          border: "1px solid rgba(193, 51, 63, 0.15)",
-                          color: "#7F1D1D",
-                          fontSize: "13px",
-                          fontWeight: 600,
-                        }}
-                        role="alert"
+            {/* TABLE */}
+            <div className={styles.tableWrapper}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nom complet</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>events selected</th>
+                    <th>candidates selected</th>
+                    <th></th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {paginatedUsers.length > 0 ? (
+                    paginatedUsers.map((user) => (
+                      <tr
+                        key={user.id}
+                        className={styles.userRow}
                       >
-                        {addError}
-                      </div>
-                    )}
-                    <button
-                      type="submit"
-                      className={selStyles.importButton}
-                      disabled={adding}
+                        <td>{user.name}</td>
+
+                        <td>{user.email}</td>
+
+                        <td className={styles.roleCell}>
+                          <div
+                            className={styles.roleWrapper}
+                          >
+                            <span
+                              className={`${styles.role} ${getRoleBadgeClass(user)}`}
+                            >
+                              {user.role}
+                            </span>
+                          </div>
+                        </td>
+
+                        <td>{user.events}</td>
+
+                        <td>{user.candidates}</td>
+
+                        {/* ACTIONS */}
+                        <td className={styles.actionCell}>
+                          <div
+                            className={
+                              styles.actionMenuWrapper
+                            }
+                          >
+                            <button
+                              type="button"
+                              className={
+                                styles.moreButton
+                              }
+                              aria-label={`Actions for ${user.name}`}
+                              onClick={() =>
+                                setOpenMenuId(
+                                  openMenuId ===
+                                    user.id
+                                    ? null
+                                    : user.id
+                                )
+                              }
+                            >
+                              •••
+                            </button>
+
+                            {openMenuId === user.id && (
+                              <div
+                                className={
+                                  styles.actionMenu
+                                }
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleViewDetails(
+                                      user
+                                    )
+                                  }
+                                >
+                                  Details
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleEditUser(
+                                      user
+                                    )
+                                  }
+                                >
+                                  Edit
+                                </button>
+
+                                <button
+                                  type="button"
+                                  className={
+                                    styles.deleteAction
+                                  }
+                                  onClick={() =>
+                                    handleDeleteUser(
+                                      user
+                                    )
+                                  }
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6}>
+                        No users found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* PAGINATION */}
+            <footer className={styles.pagination}>
+              <div className={styles.pageSize}>
+                <span>{USERS_PER_PAGE}</span>
+                <span>⌄</span>
+                <span>per page</span>
+              </div>
+
+              <div className={styles.pageNavigation}>
+                <span
+                  className={styles.pageNumber}
+                >
+                  {safeCurrentPage}
+                </span>
+
+                <span>
+                  of {totalPages} pages
+                </span>
+
+                <button
+                  type="button"
+                  aria-label="Previous page"
+                  onClick={goToPreviousPage}
+                  disabled={
+                    safeCurrentPage === 1
+                  }
+                >
+                  ‹
+                </button>
+
+                <button
+                  type="button"
+                  aria-label="Next page"
+                  onClick={goToNextPage}
+                  disabled={
+                    safeCurrentPage === totalPages
+                  }
+                >
+                  ›
+                </button>
+              </div>
+            </footer>
+
+            {/* ADD USER */}
+            <AddUserModal
+              isOpen={isAddUserOpen}
+              onClose={() =>
+                setIsAddUserOpen(false)
+              }
+              onUserAdded={refreshUsers}
+            />
+
+            {/* EDIT USER */}
+            <EditUserModal
+              isOpen={isEditUserOpen}
+              user={selectedUser}
+              onClose={() => {
+                setIsEditUserOpen(false);
+                setSelectedUser(null);
+              }}
+              onUserUpdated={refreshUsers}
+            />
+
+            {/* USER DETAILS */}
+            {isDetailsOpen && selectedUser && (
+              <div
+                className={styles.detailsOverlay}
+                onMouseDown={() => {
+                  setIsDetailsOpen(false);
+                  setSelectedUser(null);
+                }}
+              >
+                <div
+                  className={styles.detailsModal}
+                  onMouseDown={(e) =>
+                    e.stopPropagation()
+                  }
+                >
+                  <button
+                    type="button"
+                    className={styles.detailsClose}
+                    onClick={() => {
+                      setIsDetailsOpen(false);
+                      setSelectedUser(null);
+                    }}
+                    aria-label="Fermer"
+                  >
+                    ×
+                  </button>
+
+                  <h2>User details</h2>
+
+                  <div
+                    className={styles.detailsAvatar}
+                  >
+                    {selectedUser.name
+                      .charAt(0)
+                      .toUpperCase()}
+                  </div>
+
+                  <div
+                    className={
+                      styles.detailsName
+                    }
+                  >
+                    {selectedUser.name}
+                  </div>
+
+                  <div
+                    className={
+                      styles.detailsRole
+                    }
+                  >
+                    <span
+                      className={`${styles.role} ${getRoleBadgeClass(selectedUser)}`}
                     >
-                      {adding ? "Création..." : "Créer l'utilisateur"}
-                    </button>
-                  </form>
+                      {selectedUser.role}
+                    </span>
+                  </div>
+
+                  <div
+                    className={
+                      styles.detailsGrid
+                    }
+                  >
+                    <div
+                      className={`${styles.detailsItem} ${styles.detailsItemFull}`}
+                    >
+                      <span>Email</span>
+                      <strong>
+                        {selectedUser.email}
+                      </strong>
+                    </div>
+
+                    <div
+                      className={
+                        styles.detailsItem
+                      }
+                    >
+                      <span>Events selected</span>
+                      <strong>
+                        {selectedUser.events}
+                      </strong>
+                    </div>
+
+                    <div
+                      className={
+                        styles.detailsItem
+                      }
+                    >
+                      <span>
+                        Candidates selected
+                      </span>
+                      <strong>
+                        {selectedUser.candidates}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className={
+                      styles.detailsEditButton
+                    }
+                    onClick={() => {
+                      setIsDetailsOpen(false);
+                      setIsEditUserOpen(true);
+                    }}
+                  >
+                    Edit user
+                  </button>
                 </div>
               </div>
             )}

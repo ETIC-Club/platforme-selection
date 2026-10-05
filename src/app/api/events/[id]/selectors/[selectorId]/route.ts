@@ -198,37 +198,11 @@ export async function DELETE(
       );
     }
 
-    const permanent = request.nextUrl.searchParams.get("permanent") === "true";
-
-    if (permanent) {
-      if (existing.isActive) {
-        return NextResponse.json(
-          { error: "Deactivate the selector before permanently deleting it" },
-          { status: 400 },
-        );
-      }
-
-      await prisma.eventSelector.delete({ where: { id: selectorId } });
-
-      return NextResponse.json({ message: "Selector permanently deleted" });
-    }
-
-    if (!existing.isActive) {
-      return NextResponse.json(
-        { error: "Selector is already deactivated" },
-        { status: 400 },
-      );
-    }
-
-    const selector = await prisma.eventSelector.update({
-      where: { id: selectorId },
-      data: { isActive: false },
-      include: { user: true },
-    });
+    // Directly remove selector from the event
+    await prisma.eventSelector.delete({ where: { id: selectorId } });
 
     return NextResponse.json({
-      message: "Selector deactivated",
-      selector,
+      message: "Selector removed from event successfully",
     });
   } catch (err: unknown) {
     console.error(

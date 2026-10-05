@@ -1,0 +1,469 @@
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.table {
+  width: 100%;
+  min-width: 820px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.thead th {
+  height: 48px;
+  padding: 0 20px;
+  background-color: #f9fafb;
+  color: #6b7280;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.thead th:first-child {
+  border-top-left-radius: 14px;
+}
+
+.thead th:last-child {
+  border-top-right-radius: 14px;
+  text-align: right;
+}
+
+.tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.15s ease;
+}
+
+.tbody tr:last-child {
+  border-bottom: none;
+}
+
+.tbody tr:hover {
+  background-color: #fafbfc;
+}
+
+.tbody td {
+  padding: 16px 20px;
+  vertical-align: middle;
+  font-size: 13px;
+  color: #374151;
+}
+
+.tbody td:last-child {
+  text-align: right;
+}
+
+/* Selector Profile (Avatar + Name) */
+.selectorProfile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #0bb29e 0%, #067a6c 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+.name {
+  font-weight: 600;
+  color: #111827;
+  font-size: 14px;
+}
+
+/* Email Column */
+.email {
+  color: #4b5563;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+/* Role Badges */
+.roleBadgeDev {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  background-color: rgba(2, 169, 162, 0.12);
+  color: #0bb29e;
+  text-transform: uppercase;
+}
+
+.roleBadgeRh {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  background-color: rgba(236, 158, 0, 0.12);
+  color: #d97706;
+  text-transform: uppercase;
+}
+
+/* Status Badges */
+.statusActive {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: rgba(34, 139, 94, 0.1);
+  color: #228b5e;
+}
+
+.statusActive::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #228b5e;
+}
+
+.statusOmitted {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.statusOmitted::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #dc2626;
+}
+
+/* Date Column */
+.date {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* Reviews / Candidates Progress Column */
+.reviewProgress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 140px;
+}
+
+.reviewCount {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.reviewedNumber {
+  font-weight: 700;
+  color: #111827;
+  font-size: 14px;
+}
+
+.separator {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0 1px;
+}
+
+.assignedNumber {
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.progressBarTrack {
+  width: 100%;
+  height: 6px;
+  background-color: #f1f3f4;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, #0bb29e 0%, #15c9b4 100%);
+  border-radius: 9999px;
+  transition: width 0.35s ease;
+}
+
+.progressBarFillComplete {
+  background: linear-gradient(90deg, #228b5e 0%, #2ec486 100%);
+}
+
+/* Action Buttons */
+.actionGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.omitButton {
+  background: rgba(193, 51, 63, 0.08);
+  border: 1px solid rgba(193, 51, 63, 0.18);
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #c1333f;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.omitButton:hover {
+  background: rgba(193, 51, 63, 0.16);
+  color: #a8232e;
+}
+
+.reintegrateButton {
+  background: rgba(34, 139, 94, 0.1);
+  border: 1px solid rgba(34, 139, 94, 0.2);
+  border-radius: 7px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #228b5e;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.reintegrateButton:hover {
+  background: rgba(34, 139, 94, 0.18);
+}
+
+.deleteButton {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.deleteButton:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+
+/* Empty & Skeleton states */
+.emptyCard {
+  text-align: center;
+  padding: 60px 20px;
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px dashed #e5e7eb;
+}
+
+.emptyTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.emptySubtitle {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+/* Toast Notifications */
+.toastSuccess {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  font-size: 13px;
+  font-weight: 600;
+  animation: toastIn 0.25s ease forwards;
+}
+
+.toastCloseBtn {
+  background: transparent;
+  border: none;
+  color: #059669;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Confirmation Dialog */
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(20, 20, 24, 0.45);
+  backdrop-filter: blur(5px);
+  animation: toastIn 0.2s ease forwards;
+}
+
+.confirmModal {
+  width: min(480px, 100%);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.16);
+  border: 1px solid #bfc9c3;
+  animation: modalScale 0.2s ease forwards;
+}
+
+@keyframes modalScale {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.confirmHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.confirmIconWarning {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.confirmTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.confirmMessage {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #4b5563;
+  margin-bottom: 16px;
+}
+
+.confirmWarningBox {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 24px;
+}
+
+.confirmActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.cancelBtn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cancelBtn:hover:not(:disabled) {
+  background: #f9fafb;
+  color: #111827;
+}
+
+.confirmBtnDanger {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.confirmBtnDanger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.confirmBtnDanger:disabled,
+.cancelBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

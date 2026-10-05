@@ -1,19 +1,17 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import styles from "../app/selectors/selectors.module.css";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import styles from "./AddSelectorModal.module.css";
 
 // ────────────────────────────────────────────────────────────────
 // AddSelectorModal — Add a selector to an event via
 // POST /api/events/[id]/selectors
 //
-// The email field is a searchable combobox: as the admin types,
-// it fetches matching users from /api/users?search=... and shows
-// a dropdown. Selecting a user auto-fills email + fullName.
-//
-// When eventId is provided (inside an event page), it's used directly.
-// When omitted (global /selectors page), the modal fetches available
-// events and shows a dropdown so the admin picks which event.
+// Clean, streamlined flow:
+//   - Filter by type: Tous (DEV & RH), DEV, RH
+//   - Search by name OR by email
+//   - Automatically excludes users already assigned to this event
+//   - Automatically maps selector role (RH or Technique) from user
 // ────────────────────────────────────────────────────────────────
 
 interface EventOption {
@@ -21,26 +19,31 @@ interface EventOption {
   name: string;
 }
 
-interface UserSuggestion {
+interface UserOption {
   id: number;
+  name: string;
   email: string;
-  fullName: string | null;
+  role: string;
+  roleType: string;
 }
 
 interface AddSelectorModalProps {
   eventId?: number;
+  existingSelectorUserIds?: number[];
+  existingSelectorEmails?: string[];
   onClose: () => void;
   onSelectorAdded: () => void;
 }
 
+type RoleFilter = "all" | "dev" | "rh";
+
 export function AddSelectorModal({
   eventId: fixedEventId,
+  existingSelectorUserIds = [],
+  existingSelectorEmails = [],
   onClose,
   onSelectorAdded,
 }: AddSelectorModalProps) {
-  const [email, setEmail] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [selectorType, setSelectorType] = useState<"RH" | "Technique">("RH");
   const [selectedEventId, setSelectedEventId] = useState<number | null>(fixedEventId ?? null);
   const [events, setEvents] = useState<EventOption[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(!fixedEventId);
@@ -48,50 +51,18 @@ export function AddSelectorModal({
   const [error, setError] = useState<string | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  // ── User search combobox state ──────────────────────────────
-  const [userQuery, setUserQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<UserSuggestion[]>([]);
+  // ── User search & filter state ──────────────────────────────
+  const [allUsers, setAllUsers] = useState<UserOption[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [showDropdown, setShowDropdown] = useState(false);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const [selectedUser, setSelectedUser] = useState<UserSuggestion | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserOption | null>(null);
+  const [targetCandidates, setTargetCandidates] = useState<string>("20");
+
   const comboboxRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Fetch events list when no fixed eventId
-  useEffect(() => {
-    if (fixedEventId) return;
-
-    let isMounted = true;
-    async function loadEvents() {
-      try {
-        const res = await fetch("/api/events");
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted && data.events) {
-            const eventList: EventOption[] = data.events.map(
-              (ev: { id: number; name: string }) => ({
-                id: ev.id,
-                name: ev.name,
-              }),
-            );
-            setEvents(eventList);
-            if (eventList.length > 0) {
-              setSelectedEventId(eventList[0].id);
-            }
-          }
-        }
-      } catch {
-        // Events fail to load — user can still type an ID
-      } finally {
-        if (isMounted) setLoadingEvents(false);
-      }
-    }
-
-    loadEvents();
-    return () => { isMounted = false; };
-  }, [fixedEventId]);
 
   // Close on Escape
   useEffect(() => {
@@ -102,7 +73,7 @@ export function AddSelectorModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [submitting, onClose]);
 
-  // Close dropdown when clicking outside the combobox
+  // Click outside combobox to close dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (comboboxRef.current && !comboboxRef.current.contains(e.target as Node)) {
@@ -113,87 +84,143 @@ export function AddSelectorModal({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === overlayRef.current && !submitting) onClose();
-  };
+  // Fetch events if not provided (global /selectors mode)
+  useEffect(() => {
+    if (fixedEventId) return;
 
-  // ── Fetch user suggestions (debounced) ──────────────────────
-  const fetchSuggestions = useCallback(async (query: string) => {
-    if (query.trim().length < 1) {
-      setSuggestions([]);
-      setShowDropdown(false);
-      return;
-    }
-
-    setLoadingSuggestions(true);
-    try {
-      const res = await fetch(`/api/users?search=${encodeURIComponent(query.trim())}&limit=8`);
-      if (res.ok) {
-        const data = await res.json();
-        const users: UserSuggestion[] = (data.users || []).map(
-          (u: { id: number; email: string; fullName: string | null }) => ({
-            id: u.id,
-            email: u.email,
-            fullName: u.fullName,
-          }),
-        );
-        setSuggestions(users);
-        setShowDropdown(users.length > 0);
-        setHighlightedIndex(-1);
+    let isMounted = true;
+    async function loadEvents() {
+      try {
+        const res = await fetch("/api/events");
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.events) {
+            const list: EventOption[] = data.events.map((e: { id: number; name: string }) => ({
+              id: e.id,
+              name: e.name,
+            }));
+            setEvents(list);
+            if (list.length > 0 && selectedEventId === null) {
+              setSelectedEventId(list[0].id);
+            }
+          }
+        }
+      } catch {
+        // silently handle
+      } finally {
+        if (isMounted) setLoadingEvents(false);
       }
-    } catch {
-      // Silently fail — the admin can still type manually
-    } finally {
-      setLoadingSuggestions(false);
     }
+
+    loadEvents();
+    return () => { isMounted = false; };
+  }, [fixedEventId, selectedEventId]);
+
+  // Pre-load all available users on modal open for instant filtering
+  useEffect(() => {
+    let isMounted = true;
+    async function loadUsers() {
+      setLoadingUsers(true);
+      try {
+        const res = await fetch("/api/users");
+        if (res.ok) {
+          const data = await res.json();
+          const list: UserOption[] = Array.isArray(data)
+            ? data
+            : (data.users || []);
+          if (isMounted) {
+            setAllUsers(list);
+          }
+        }
+      } catch {
+        // silently fallback
+      } finally {
+        if (isMounted) setLoadingUsers(false);
+      }
+    }
+
+    loadUsers();
+    return () => { isMounted = false; };
   }, []);
 
-  const handleUserQueryChange = (value: string) => {
-    setUserQuery(value);
-    setEmail(value);
+  // Normalized list of existing selector emails for fast lookup
+  const normalizedExistingEmails = useMemo(() => {
+    return new Set(existingSelectorEmails.map((e) => e.toLowerCase().trim()));
+  }, [existingSelectorEmails]);
+
+  const existingUserIdsSet = useMemo(() => {
+    return new Set(existingSelectorUserIds);
+  }, [existingSelectorUserIds]);
+
+  // Filter users: exclude existing selectors in this event + apply role & search query
+  const filteredUsers = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+
+    return allUsers.filter((u) => {
+      // 1. DO NOT DISPLAY people that are already in the event
+      if (existingUserIdsSet.has(u.id)) return false;
+      if (normalizedExistingEmails.has(u.email.toLowerCase().trim())) return false;
+
+      // 2. Role filter check (All, DEV, RH)
+      if (roleFilter === "dev") {
+        const isDev = u.roleType === "selector_dev" || u.role.toLowerCase().includes("dev");
+        if (!isDev) return false;
+      } else if (roleFilter === "rh") {
+        const isRh = u.roleType === "selector_rh" || u.role.toLowerCase().includes("rh");
+        if (!isRh) return false;
+      }
+
+      // 3. Search query check (matches name OR email)
+      if (!q) return true;
+      const matchName = u.name.toLowerCase().includes(q);
+      const matchEmail = u.email.toLowerCase().includes(q);
+      return matchName || matchEmail;
+    });
+  }, [allUsers, existingUserIdsSet, normalizedExistingEmails, roleFilter, searchQuery]);
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
     setSelectedUser(null);
-
-    // Debounce API calls — 250ms delay
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      fetchSuggestions(value);
-    }, 250);
-  };
-
-  const handleSelectUser = (user: UserSuggestion) => {
-    setEmail(user.email);
-    setFullName(user.fullName || "");
-    setUserQuery(user.email);
-    setSelectedUser(user);
-    setShowDropdown(false);
+    setShowDropdown(true);
     setHighlightedIndex(-1);
   };
 
-  // ── Keyboard navigation inside the dropdown ─────────────────
+  const handleSelectUser = (user: UserOption) => {
+    setSelectedUser(user);
+    setSearchQuery("");
+    setShowDropdown(false);
+  };
+
+  const handleClearSelected = () => {
+    setSelectedUser(null);
+    setSearchQuery("");
+    setShowDropdown(false);
+    inputRef.current?.focus();
+  };
+
   const handleComboKeyDown = (e: React.KeyboardEvent) => {
-    if (!showDropdown || suggestions.length === 0) return;
+    if (!showDropdown || filteredUsers.length === 0) return;
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setHighlightedIndex((prev) =>
-        prev < suggestions.length - 1 ? prev + 1 : 0,
-      );
+      setHighlightedIndex((prev) => (prev < filteredUsers.length - 1 ? prev + 1 : 0));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setHighlightedIndex((prev) =>
-        prev > 0 ? prev - 1 : suggestions.length - 1,
-      );
+      setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : filteredUsers.length - 1));
     } else if (e.key === "Enter" && highlightedIndex >= 0) {
       e.preventDefault();
-      handleSelectUser(suggestions[highlightedIndex]);
+      handleSelectUser(filteredUsers[highlightedIndex]);
     } else if (e.key === "Escape") {
       setShowDropdown(false);
     }
   };
 
-  // ── Get initials for avatar ─────────────────────────────────
-  const getInitials = (name: string | null, email: string): string => {
-    const src = name || email;
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === overlayRef.current && !submitting) onClose();
+  };
+
+  const getInitials = (name: string | null, em: string): string => {
+    const src = name || em;
     return src
       .split(/[\s@]/)
       .map((n) => n[0])
@@ -203,18 +230,18 @@ export function AddSelectorModal({
       .toUpperCase();
   };
 
-  // ── Highlight matching text in suggestion ───────────────────
-  const highlightMatch = (text: string, query: string) => {
-    if (!query.trim()) return text;
-    const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  const highlightMatch = (text: string, q: string) => {
+    const trimmed = q.trim();
+    if (!trimmed) return text;
+    const idx = text.toLowerCase().indexOf(trimmed.toLowerCase());
     if (idx === -1) return text;
     return (
       <>
         {text.slice(0, idx)}
-        <strong style={{ color: "var(--color-primary-teal)", fontWeight: 800 }}>
-          {text.slice(idx, idx + query.length)}
+        <strong style={{ color: "#0bb29e" }}>
+          {text.slice(idx, idx + trimmed.length)}
         </strong>
-        {text.slice(idx + query.length)}
+        {text.slice(idx + trimmed.length)}
       </>
     );
   };
@@ -223,34 +250,44 @@ export function AddSelectorModal({
     e.preventDefault();
     setError(null);
 
-    if (!selectedEventId || selectedEventId <= 0) {
+    const targetEventId = fixedEventId ?? selectedEventId;
+    if (!targetEventId) {
       setError("Veuillez sélectionner un événement.");
       return;
     }
 
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail) {
-      setError("L'email est requis.");
+    if (!selectedUser) {
+      setError("Veuillez sélectionner un utilisateur dans la liste.");
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      setError("Format d'email invalide.");
+
+    // Automatically derive selector type from user role:
+    const isRh =
+      selectedUser.roleType === "selector_rh" ||
+      selectedUser.role.toLowerCase().includes("rh");
+    const derivedSelectorType: "RH" | "Technique" = isRh ? "RH" : "Technique";
+
+    const quota = parseInt(targetCandidates, 10);
+    if (isNaN(quota) || quota <= 0) {
+      setError("Veuillez saisir un nombre valide de candidats à évaluer (minimum 1).");
       return;
     }
 
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/events/${selectedEventId}/selectors`, {
+      const res = await fetch(`/api/events/${targetEventId}/selectors`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: trimmedEmail,
-          fullName: fullName.trim() || undefined,
-          selectorType,
+          email: selectedUser.email,
+          fullName: selectedUser.name || undefined,
+          selectorType: derivedSelectorType,
+          targetCandidates: quota,
         }),
       });
 
       const data = await res.json();
+
       if (!res.ok) {
         setError(data.error || `Erreur serveur (${res.status}).`);
         return;
@@ -265,34 +302,41 @@ export function AddSelectorModal({
     }
   };
 
+  const selectedIsRh =
+    selectedUser &&
+    (selectedUser.roleType === "selector_rh" ||
+      selectedUser.role.toLowerCase().includes("rh"));
+
   return (
     <div
-      className={styles.modalOverlay}
+      className={`${styles.overlay} ${styles.overlayOpen}`}
       ref={overlayRef}
       onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true"
       aria-label="Ajouter un sélecteur"
     >
-      <div className={styles.modalContent}>
-        <div className={styles.modalHeader}>
-          <h2 className={styles.modalTitle}>Ajouter un sélecteur</h2>
-          <button
-            type="button"
-            className={styles.modalCloseBtn}
-            onClick={onClose}
-            aria-label="Fermer"
-            disabled={submitting}
-          >
-            ✕
-          </button>
-        </div>
+      <div
+        className={`${styles.modal} ${styles.modalOpen}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          className={styles.closeButton}
+          onClick={onClose}
+          aria-label="Fermer"
+          disabled={submitting}
+        >
+          ✕
+        </button>
 
-        <form className={styles.modalBody} onSubmit={handleSubmit}>
+        <h2>Ajouter un sélecteur</h2>
+
+        <form onSubmit={handleSubmit}>
           {/* Event picker — only shown when no fixed eventId */}
           {!fixedEventId && (
-            <label className={styles.fieldLabel}>
-              Événement *
+            <div className={styles.field}>
+              <label>Événement *</label>
               {loadingEvents ? (
                 <div style={{ fontSize: "13px", color: "#8C8F8E", padding: "10px 0" }}>
                   Chargement des événements...
@@ -305,7 +349,6 @@ export function AddSelectorModal({
                 <select
                   value={selectedEventId ?? ""}
                   onChange={(e) => setSelectedEventId(Number(e.target.value))}
-                  className={styles.eventSelect}
                   required
                 >
                   {events.map((ev) => (
@@ -315,158 +358,230 @@ export function AddSelectorModal({
                   ))}
                 </select>
               )}
-            </label>
+            </div>
           )}
 
-          {/* ── Searchable User Combobox ──────────────────────── */}
-          <div className={styles.fieldLabel}>
-            <span>Utilisateur *</span>
+          {/* ── Type Filter Pills: All / DEV / RH ──────────────── */}
+          <div className={styles.field}>
+            <label>Filtrer par type</label>
+            <div className={styles.roleFilterRow}>
+              <button
+                type="button"
+                className={`${styles.filterPill} ${
+                  roleFilter === "all" ? styles.filterPillActive : ""
+                }`}
+                onClick={() => {
+                  setRoleFilter("all");
+                  setShowDropdown(true);
+                }}
+              >
+                Tous (DEV & RH)
+              </button>
+              <button
+                type="button"
+                className={`${styles.filterPill} ${
+                  roleFilter === "dev" ? styles.filterPillActive : ""
+                }`}
+                onClick={() => {
+                  setRoleFilter("dev");
+                  setShowDropdown(true);
+                }}
+              >
+                DEV
+              </button>
+              <button
+                type="button"
+                className={`${styles.filterPill} ${
+                  roleFilter === "rh" ? styles.filterPillActive : ""
+                }`}
+                onClick={() => {
+                  setRoleFilter("rh");
+                  setShowDropdown(true);
+                }}
+              >
+                RH
+              </button>
+            </div>
+          </div>
+
+          {/* ── Searchable Combobox: By Name or Email ──────────── */}
+          <div className={styles.field}>
+            <label>Rechercher un utilisateur (par nom ou email) *</label>
             <div className={styles.comboboxWrapper} ref={comboboxRef}>
               <div className={styles.comboboxInputRow}>
-                {selectedUser && (
-                  <div className={styles.comboboxSelectedAvatar}>
-                    {getInitials(selectedUser.fullName, selectedUser.email)}
-                  </div>
-                )}
                 <input
                   ref={inputRef}
                   type="text"
-                  value={userQuery}
-                  onChange={(e) => handleUserQueryChange(e.target.value)}
-                  onFocus={() => {
-                    if (suggestions.length > 0 && !selectedUser) {
-                      setShowDropdown(true);
-                    }
-                  }}
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onFocus={() => setShowDropdown(true)}
                   onKeyDown={handleComboKeyDown}
-                  placeholder="Rechercher par nom ou email..."
-                  className={styles.eventSelect}
-                  style={selectedUser ? { paddingLeft: "42px" } : undefined}
+                  placeholder="Tapez un nom ou un email..."
                   autoComplete="off"
-                  autoFocus={!!fixedEventId}
                   role="combobox"
                   aria-expanded={showDropdown}
                   aria-autocomplete="list"
-                  aria-controls="user-suggestions-list"
+                  disabled={!!selectedUser}
                 />
-                {loadingSuggestions && (
+                {loadingUsers && (
                   <div className={styles.comboboxSpinner}>
                     <span className={styles.spinner} style={{ width: 14, height: 14, borderWidth: "2px" }} />
                   </div>
                 )}
-                {selectedUser && (
+                {searchQuery && !selectedUser && (
                   <button
                     type="button"
                     className={styles.comboboxClearBtn}
                     onClick={() => {
-                      setSelectedUser(null);
-                      setUserQuery("");
-                      setEmail("");
-                      setFullName("");
-                      setSuggestions([]);
+                      setSearchQuery("");
                       setShowDropdown(false);
                       inputRef.current?.focus();
                     }}
-                    aria-label="Effacer la sélection"
+                    aria-label="Effacer la recherche"
                   >
                     ✕
                   </button>
                 )}
               </div>
 
-              {/* Dropdown */}
-              {showDropdown && (
-                <ul
-                  className={styles.comboboxDropdown}
-                  id="user-suggestions-list"
-                  role="listbox"
-                >
-                  {suggestions.map((user, idx) => (
-                    <li
-                      key={user.id}
-                      className={`${styles.comboboxOption} ${
-                        idx === highlightedIndex ? styles.comboboxOptionHighlighted : ""
-                      }`}
-                      onClick={() => handleSelectUser(user)}
-                      onMouseEnter={() => setHighlightedIndex(idx)}
-                      role="option"
-                      aria-selected={idx === highlightedIndex}
-                    >
-                      <div className={styles.comboboxOptionAvatar}>
-                        {getInitials(user.fullName, user.email)}
-                      </div>
-                      <div className={styles.comboboxOptionInfo}>
-                        <span className={styles.comboboxOptionName}>
-                          {highlightMatch(user.fullName || user.email, userQuery)}
-                        </span>
-                        {user.fullName && (
-                          <span className={styles.comboboxOptionEmail}>
-                            {highlightMatch(user.email, userQuery)}
+              {/* Suggestions Dropdown */}
+              {showDropdown && !selectedUser && filteredUsers.length > 0 && (
+                <ul className={styles.comboboxDropdown} role="listbox">
+                  {filteredUsers.map((user, idx) => {
+                    const isRh =
+                      user.roleType === "selector_rh" ||
+                      user.role.toLowerCase().includes("rh");
+                    const isAdmin = user.role === "Admin";
+
+                    return (
+                      <li
+                        key={user.id}
+                        className={`${styles.comboboxOption} ${
+                          idx === highlightedIndex ? styles.comboboxOptionHighlighted : ""
+                        }`}
+                        onClick={() => handleSelectUser(user)}
+                        onMouseEnter={() => setHighlightedIndex(idx)}
+                        role="option"
+                        aria-selected={idx === highlightedIndex}
+                      >
+                        <div className={styles.comboboxOptionAvatar}>
+                          {getInitials(user.name, user.email)}
+                        </div>
+                        <div className={styles.comboboxOptionInfo}>
+                          <span className={styles.comboboxOptionName}>
+                            {highlightMatch(user.name || user.email, searchQuery)}
                           </span>
-                        )}
-                      </div>
-                    </li>
-                  ))}
+                          {user.name && (
+                            <span className={styles.comboboxOptionEmail}>
+                              {highlightMatch(user.email, searchQuery)}
+                            </span>
+                          )}
+                        </div>
+
+                        <span
+                          className={`${styles.optionRoleBadge} ${
+                            isAdmin
+                              ? styles.optionRoleAdmin
+                              : isRh
+                              ? styles.optionRoleRh
+                              : styles.optionRoleDev
+                          }`}
+                        >
+                          {isAdmin ? "Admin" : isRh ? "RH" : "DEV"}
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
+
+              {showDropdown && !selectedUser && filteredUsers.length === 0 && !loadingUsers && (
+                <div
+                  className={styles.comboboxDropdown}
+                  style={{ padding: "14px 16px", color: "#6b7280", fontSize: "13px" }}
+                >
+                  {searchQuery
+                    ? "Aucun utilisateur disponible trouvé."
+                    : "Tous les utilisateurs de ce type sont déjà ajoutés à cet événement."}
+                </div>
+              )}
             </div>
-            <p style={{ fontSize: "11px", color: "#8C8F8E", margin: 0 }}>
-              Tapez pour rechercher parmi les utilisateurs existants.
-            </p>
           </div>
 
-          <label className={styles.fieldLabel}>
-            Nom complet
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Prénom Nom (optionnel)"
-              className={styles.eventSelect}
-            />
-          </label>
+          {/* Selected User Preview Card */}
+          {selectedUser && (
+            <div className={styles.selectedUserCard}>
+              <div className={styles.comboboxOptionAvatar}>
+                {getInitials(selectedUser.name, selectedUser.email)}
+              </div>
+              <div className={styles.selectedUserInfo}>
+                <span className={styles.selectedUserName}>
+                  {selectedUser.name || selectedUser.email}
+                </span>
+                <span className={styles.selectedUserEmail}>
+                  {selectedUser.email}
+                </span>
+              </div>
+              <span
+                className={`${styles.optionRoleBadge} ${
+                  selectedIsRh ? styles.optionRoleRh : styles.optionRoleDev
+                }`}
+              >
+                {selectedIsRh ? "RH" : "DEV"}
+              </span>
+              <button
+                type="button"
+                className={styles.unselectBtn}
+                onClick={handleClearSelected}
+                title="Changer d'utilisateur"
+                aria-label="Changer d'utilisateur"
+              >
+                ✕
+              </button>
+            </div>
+          )}
 
-          <label className={styles.fieldLabel}>
-            Type de sélecteur *
-            <select
-              value={selectorType}
-              onChange={(e) => setSelectorType(e.target.value as "RH" | "Technique")}
-              className={styles.eventSelect}
-            >
-              <option value="RH">RH</option>
-              <option value="Technique">Technique (DEV)</option>
-            </select>
-          </label>
+          {/* ── Nombre de candidats à évaluer (Quota) ──────────── */}
+          <div className={styles.field}>
+            <label htmlFor="targetCandidatesInput">
+              Nombre de candidats à évaluer *
+            </label>
+            <input
+              id="targetCandidatesInput"
+              type="number"
+              min={1}
+              max={9999}
+              value={targetCandidates}
+              onChange={(e) => setTargetCandidates(e.target.value)}
+              placeholder="Ex: 20"
+              required
+              disabled={submitting}
+            />
+            <span className={styles.fieldHelper}>
+              Nombre de candidats que ce sélecteur devra évaluer pour cet événement.
+            </span>
+          </div>
 
           {error && (
-            <div
-              style={{
-                padding: "12px 16px",
-                backgroundColor: "rgba(193, 51, 63, 0.06)",
-                borderRadius: "10px",
-                border: "1px solid rgba(193, 51, 63, 0.15)",
-                color: "#7F1D1D",
-                fontSize: "13px",
-                fontWeight: 600,
-              }}
-              role="alert"
-            >
+            <div className={styles.errorBanner} role="alert">
               {error}
             </div>
           )}
 
           <button
             type="submit"
-            className={styles.importButton}
-            disabled={submitting || loadingEvents || (!fixedEventId && events.length === 0)}
+            className={styles.submitButton}
+            disabled={submitting || !selectedUser}
           >
             {submitting ? (
               <>
                 <span className={styles.spinner} />
-                Ajout en cours...
+                <span>Ajout en cours...</span>
               </>
+            ) : selectedUser ? (
+              <span>Ajouter {selectedUser.name || selectedUser.email}</span>
             ) : (
-              "Ajouter le sélecteur"
+              <span>Sélectionnez un utilisateur</span>
             )}
           </button>
         </form>
@@ -474,3 +589,5 @@ export function AddSelectorModal({
     </div>
   );
 }
+
+export default AddSelectorModal;

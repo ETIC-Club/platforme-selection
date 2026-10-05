@@ -7,13 +7,14 @@ import { PlusIcon } from "@/components/Icons";
 import { useAuth } from "@/context/AuthContext";
 import styles from "@/components/dashboard.module.css";
 import selStyles from "@/app/selectors/selectors.module.css";
+import tableStyles from "./selectors.module.css";
 
 // ────────────────────────────────────────────────────────────────
 // /events/[id]/selectors — List selectors for a specific event
 //
-// Shows all selectors assigned to this event, with an ADD SELECTOR
-// button for admins. Uses the existing GET /api/events/[id]/selectors
-// backend endpoint which returns selectors with user info.
+// Shows all active selectors assigned to this event in a structured
+// table with dedicated columns for Name, Email, Role, Status, Date, Actions.
+// When "Omettre" is pressed, the selector is removed from the event directly.
 // ────────────────────────────────────────────────────────────────
 
 interface SelectorsPageProps {
@@ -25,6 +26,8 @@ interface SelectorItem {
   selectorType: "RH" | "Technique";
   isActive: boolean;
   addedAt: string;
+  reviewedCount?: number;
+  assignedCount?: number;
   user: {
     id: number;
     email: string;
@@ -43,58 +46,45 @@ export default function SelectorsPage({ params }: SelectorsPageProps) {
   const [eventName, setEventName] = useState(`Event #${eventId}`);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const handleDeleteSelector = async (selectorId: number) => {
-    if (!confirm("Désactiver ce sélecteur ?")) return;
-    try {
-      const res = await fetch(`/api/events/${eventId}/selectors/${selectorId}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setRefreshKey((k) => k + 1);
-      } else {
-        const data = await res.json().catch(() => ({}));
-        alert(data.error || "Erreur lors de la suppression.");
-      }
-    } catch {
-      alert("Erreur réseau.");
-    }
-  };
+  // In-app confirmation dialog state
+  const [omittingSelector, setOmittingSelector] = useState<SelectorItem | null>(null);
+  const [omitLoading, setOmitLoading] = useState(false);
 
-  const handleReactivateSelector = async (selectorId: number) => {
-    try {
-      const res = await fetch(`/api/events/${eventId}/selectors/${selectorId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive: true }),
-      });
-      if (res.ok) {
-        setRefreshKey((k) => k + 1);
-      } else {
-        const data = await res.json().catch(() => ({}));
-        alert(data.error || "Erreur lors de la réactivation.");
-      }
-    } catch {
-      alert("Erreur réseau.");
-    }
-  };
+  // Success toast notification state
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const handlePermanentDelete = async (selectorId: number) => {
-    if (!confirm("Supprimer définitivement ce sélecteur et ses évaluations ?")) {
-      return;
-    }
+  // Auto-dismiss toast after 4.5 seconds
+  useEffect(() => {
+    if (!toastMessage) return;
+    const timer = setTimeout(() => {
+      setToastMessage(null);
+    }, 4500);
+    return () => clearTimeout(timer);
+  }, [toastMessage]);
+
+  // Execute omission: directly removes the selector from the event
+  const handleConfirmOmit = async () => {
+    if (!omittingSelector) return;
+    setOmitLoading(true);
     try {
       const res = await fetch(
-        `/api/events/${eventId}/selectors/${selectorId}?permanent=true`,
-        { method: "DELETE" },
+        `/api/events/${eventId}/selectors/${omittingSelector.id}`,
+        { method: "DELETE" }
       );
       if (res.ok) {
+        const selectorName =
+          omittingSelector.user.fullName || omittingSelector.user.email;
+        setToastMessage(`✓ ${selectorName} a été retiré de l'événement.`);
+        setOmittingSelector(null);
         setRefreshKey((k) => k + 1);
       } else {
         const data = await res.json().catch(() => ({}));
-        alert(data.error || "Erreur lors de la suppression définitive.");
+        alert(data.error || "Erreur lors du retrait du sélecteur.");
       }
     } catch {
-      alert("Erreur réseau.");
+      alert("Erreur réseau lors de l'omission.");
+    } finally {
+      setOmitLoading(false);
     }
   };
 
@@ -103,7 +93,7 @@ export default function SelectorsPage({ params }: SelectorsPageProps) {
 
     async function loadData() {
       try {
-        // Fetch selectors
+        // Fetch active selectors
         const selRes = await fetch(`/api/events/${eventId}/selectors`);
         if (selRes.ok) {
           const selData = await selRes.json();
@@ -133,7 +123,9 @@ export default function SelectorsPage({ params }: SelectorsPageProps) {
     }
 
     loadData();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [eventId, refreshKey]);
 
   const getInitials = (name: string | null, email: string): string => {
@@ -153,7 +145,7 @@ export default function SelectorsPage({ params }: SelectorsPageProps) {
   return (
     <DashboardLayout eventContext={{ id: eventId, name: eventName }}>
       {({ searchQuery }) => {
-        // Gate: only SUPER_ADMIN can see selectors
+        // Gate: only SUPER_ADMIN can manage selectors
         if (!isAdmin) {
           return (
             <div className={styles.mainCard}>
@@ -167,7 +159,10 @@ export default function SelectorsPage({ params }: SelectorsPageProps) {
           );
         }
 
-        const filtered = selectors.filter((s) => {
+        // Only display active selectors, filtered by search query
+        const activeSelectors = selectors.filter((s) => s.isActive !== false);
+
+        const filtered = activeSelectors.filter((s) => {
           if (!searchQuery.trim()) return true;
           const q = searchQuery.toLowerCase();
           const name = (s.user.fullName || "").toLowerCase();
@@ -192,143 +187,227 @@ export default function SelectorsPage({ params }: SelectorsPageProps) {
               </button>
             </div>
 
-            {/* List */}
-            <div className={styles.eventsList}>
-              {loading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className={selStyles.skeletonCard}>
-                    <div className={`${selStyles.skeletonPulse} ${selStyles.skeletonAvatar}`} />
-                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <div className={`${selStyles.skeletonPulse} ${selStyles.skeletonText}`} style={{ width: "140px" }} />
-                      <div className={`${selStyles.skeletonPulse} ${selStyles.skeletonText} ${selStyles.skeletonTextShort}`} />
-                    </div>
-                    <div className={`${selStyles.skeletonPulse} ${selStyles.skeletonBadge}`} />
-                  </div>
-                ))
-              ) : error ? (
-                <div className={selStyles.errorState}>
-                  <div className={selStyles.errorTitle}>Erreur de chargement</div>
-                  <div className={selStyles.emptySubtitle}>{error}</div>
+            {/* Success Feedback Toast */}
+            {toastMessage && (
+              <div className={tableStyles.toastSuccess} role="status">
+                <span>{toastMessage}</span>
+                <button
+                  type="button"
+                  className={tableStyles.toastCloseBtn}
+                  onClick={() => setToastMessage(null)}
+                  aria-label="Fermer la notification"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* Content Table / States */}
+            {loading ? (
+              <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                <div
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    border: "3px solid #E5E7EB",
+                    borderTopColor: "var(--color-primary-teal)",
+                    borderRadius: "50%",
+                    animation: "spin 1s linear infinite",
+                    margin: "0 auto 12px auto",
+                  }}
+                />
+                <p style={{ color: "#6B7280", fontSize: "14px", fontWeight: 500 }}>
+                  Chargement des sélecteurs de l&apos;événement...
+                </p>
+              </div>
+            ) : error ? (
+              <div className={tableStyles.emptyCard}>
+                <div className={tableStyles.emptyTitle}>Erreur de chargement</div>
+                <div className={tableStyles.emptySubtitle}>{error}</div>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className={tableStyles.emptyCard}>
+                <div className={tableStyles.emptyTitle}>Aucun sélecteur actif</div>
+                <div className={tableStyles.emptySubtitle}>
+                  {searchQuery
+                    ? "Aucun sélecteur ne correspond à votre recherche."
+                    : "Ajoutez des sélecteurs pour cet événement avec le bouton ci-dessus."}
                 </div>
-              ) : filtered.length === 0 ? (
-                <div className={selStyles.emptyState}>
-                  <div className={selStyles.emptyTitle}>Aucun sélecteur trouvé</div>
-                  <div className={selStyles.emptySubtitle}>
-                    {searchQuery
-                      ? "Aucun sélecteur ne correspond à votre recherche."
-                      : "Ajoutez des sélecteurs avec le bouton ci-dessus."}
+              </div>
+            ) : (
+              <div className={tableStyles.tableWrapper}>
+                <table className={tableStyles.table}>
+                  <thead className={tableStyles.thead}>
+                    <tr>
+                      <th style={{ width: "24%" }}>Sélecteur</th>
+                      <th style={{ width: "24%" }}>Email</th>
+                      <th style={{ width: "10%" }}>Rôle</th>
+                      <th style={{ width: "10%" }}>Statut</th>
+                      <th style={{ width: "20%" }}>Candidats évalués</th>
+                      <th style={{ width: "12%", textAlign: "right" }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className={tableStyles.tbody}>
+                    {filtered.map((sel) => (
+                      <tr key={sel.id}>
+                        {/* Column 1: Nom complet + Avatar */}
+                        <td>
+                          <div className={tableStyles.selectorProfile}>
+                            <div className={tableStyles.avatar}>
+                              {getInitials(sel.user.fullName, sel.user.email)}
+                            </div>
+                            <span className={tableStyles.name}>
+                              {sel.user.fullName || sel.user.email}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Column 2: Email */}
+                        <td>
+                          <span className={tableStyles.email}>{sel.user.email}</span>
+                        </td>
+
+                        {/* Column 3: Rôle */}
+                        <td>
+                          <span
+                            className={
+                              sel.selectorType === "RH"
+                                ? tableStyles.roleBadgeRh
+                                : tableStyles.roleBadgeDev
+                            }
+                          >
+                            {sel.selectorType === "RH" ? "RH" : "DEV"}
+                          </span>
+                        </td>
+
+                        {/* Column 4: Statut */}
+                        <td>
+                          <span className={tableStyles.statusActive}>
+                            Actif
+                          </span>
+                        </td>
+
+                        {/* Column 5: Candidats évalués (ex: 0 / 20) */}
+                        <td>
+                          <div className={tableStyles.reviewProgress}>
+                            <div className={tableStyles.reviewCount}>
+                              <span className={tableStyles.reviewedNumber}>
+                                {sel.reviewedCount ?? 0}
+                              </span>
+                              <span className={tableStyles.separator}>/</span>
+                              <span className={tableStyles.assignedNumber}>
+                                {sel.assignedCount ?? 20}
+                              </span>
+                            </div>
+                            <div className={tableStyles.progressBarTrack}>
+                              <div
+                                className={`${tableStyles.progressBarFill} ${
+                                  (sel.reviewedCount ?? 0) >= (sel.assignedCount ?? 20) &&
+                                  (sel.assignedCount ?? 20) > 0
+                                    ? tableStyles.progressBarFillComplete
+                                    : ""
+                                }`}
+                                style={{
+                                  width: `${Math.min(
+                                    100,
+                                    Math.round(
+                                      ((sel.reviewedCount ?? 0) /
+                                        Math.max(1, sel.assignedCount ?? 20)) *
+                                        100,
+                                    ),
+                                  )}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Column 6: Action Omettre */}
+                        <td>
+                          <div className={tableStyles.actionGroup}>
+                            <button
+                              type="button"
+                              className={tableStyles.omitButton}
+                              onClick={() => setOmittingSelector(sel)}
+                              title="Omettre ce sélecteur de l'événement"
+                            >
+                              Omettre
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* In-app Omit Confirmation Modal */}
+            {omittingSelector && (
+              <div
+                className={tableStyles.confirmOverlay}
+                onClick={() => !omitLoading && setOmittingSelector(null)}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Confirmer l'omission du sélecteur"
+              >
+                <div
+                  className={tableStyles.confirmModal}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className={tableStyles.confirmHeader}>
+                    <div className={tableStyles.confirmIconWarning}>⚠️</div>
+                    <h2 className={tableStyles.confirmTitle}>
+                      Omettre de l&apos;événement
+                    </h2>
+                  </div>
+
+                  <p className={tableStyles.confirmMessage}>
+                    Êtes-vous sûr de vouloir omettre{" "}
+                    <strong>
+                      {omittingSelector.user.fullName || omittingSelector.user.email}
+                    </strong>{" "}
+                    ({omittingSelector.user.email}) de cet événement ?
+                  </p>
+
+                  <div className={tableStyles.confirmWarningBox}>
+                    Ce sélecteur sera retiré immédiatement de cet événement. Vous
+                    pourrez toujours le rajouter plus tard via le bouton « ADD SELECTOR ».
+                  </div>
+
+                  <div className={tableStyles.confirmActions}>
+                    <button
+                      type="button"
+                      className={tableStyles.cancelBtn}
+                      onClick={() => setOmittingSelector(null)}
+                      disabled={omitLoading}
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      type="button"
+                      className={tableStyles.confirmBtnDanger}
+                      onClick={handleConfirmOmit}
+                      disabled={omitLoading}
+                    >
+                      {omitLoading ? "Retrait en cours..." : "Omettre de l'événement"}
+                    </button>
                   </div>
                 </div>
-              ) : (
-                filtered.map((sel) => (
-                  <article key={sel.id} className={styles.itemCard}>
-                    <div className={styles.candProfile}>
-                      <div className={selStyles.selectorAvatar}>
-                        {getInitials(sel.user.fullName, sel.user.email)}
-                      </div>
-                      <div className={styles.candNameGroup}>
-                        <span className={styles.candName}>
-                          {sel.user.fullName || sel.user.email}
-                        </span>
-                        <span className={styles.candEmail}>{sel.user.email}</span>
-                      </div>
-                    </div>
-
-                    <span
-                      className={
-                        sel.selectorType === "RH"
-                          ? styles.typeBadgeRh
-                          : styles.typeBadgeTech
-                      }
-                    >
-                      {sel.selectorType === "RH" ? "RH" : "DEV"}
-                    </span>
-
-                    <span
-                      className={
-                        sel.isActive
-                          ? styles.statusTermine
-                          : styles.statusEnCours
-                      }
-                      style={{ fontSize: "12px", fontWeight: 700 }}
-                    >
-                      {sel.isActive ? "Actif" : "Inactif"}
-                    </span>
-
-                    <span style={{ fontSize: "12px", color: "#8C8F8E" }}>
-                      {new Date(sel.addedAt).toLocaleDateString("fr-FR", {
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </span>
-
-                    {sel.isActive ? (
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteSelector(sel.id)}
-                        style={{
-                          background: "rgba(193, 51, 63, 0.08)",
-                          border: "none",
-                          borderRadius: "8px",
-                          padding: "6px 12px",
-                          fontSize: "12px",
-                          fontWeight: 700,
-                          color: "#C1333F",
-                          cursor: "pointer",
-                        }}
-                        aria-label={`Désactiver ${sel.user.fullName || sel.user.email}`}
-                      >
-                        Désactiver
-                      </button>
-                    ) : (
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <button
-                          type="button"
-                          onClick={() => handleReactivateSelector(sel.id)}
-                          style={{
-                            background: "rgba(34, 139, 94, 0.1)",
-                            border: "none",
-                            borderRadius: "8px",
-                            padding: "6px 12px",
-                            fontSize: "12px",
-                            fontWeight: 700,
-                            color: "#228B5E",
-                            cursor: "pointer",
-                          }}
-                          aria-label={`Réactiver ${sel.user.fullName || sel.user.email}`}
-                        >
-                          Activer
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handlePermanentDelete(sel.id)}
-                          style={{
-                            background: "rgba(193, 51, 63, 0.08)",
-                            border: "none",
-                            borderRadius: "8px",
-                            padding: "6px 12px",
-                            fontSize: "12px",
-                            fontWeight: 700,
-                            color: "#C1333F",
-                            cursor: "pointer",
-                          }}
-                          aria-label={`Supprimer définitivement ${sel.user.fullName || sel.user.email}`}
-                        >
-                          Supprimer
-                        </button>
-                      </div>
-                    )}
-                  </article>
-                ))
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Add Selector Modal */}
             {showAddModal && (
               <AddSelectorModal
                 eventId={eventId}
+                existingSelectorUserIds={selectors.map((s) => s.user.id)}
+                existingSelectorEmails={selectors.map((s) => s.user.email.toLowerCase())}
                 onClose={() => setShowAddModal(false)}
-                onSelectorAdded={() => setRefreshKey((k) => k + 1)}
+                onSelectorAdded={() => {
+                  setToastMessage("✓ Sélecteur ajouté avec succès.");
+                  setRefreshKey((k) => k + 1);
+                }}
               />
             )}
           </div>

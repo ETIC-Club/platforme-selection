@@ -117,12 +117,11 @@ export default function OutsideAnEventPage() {
               </div>
             )}
 
-            {showAddModal && (
-              <AddEventModal
-                onClose={() => setShowAddModal(false)}
-                onEventCreated={() => setRefreshKey((k) => k + 1)}
-              />
-            )}
+            <AddEventModal
+              isOpen={showAddModal}
+              onClose={() => setShowAddModal(false)}
+              onEventCreated={() => setRefreshKey((k) => k + 1)}
+            />
           </div>
         );
       }}

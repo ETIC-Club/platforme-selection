@@ -28,13 +28,64 @@ export async function GET(
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
+    // Ensure target_candidates column exists in event_selectors
+    try {
+      await prisma.$executeRawUnsafe(
+        `ALTER TABLE event_selectors ADD COLUMN IF NOT EXISTS target_candidates INTEGER DEFAULT 20`,
+      );
+    } catch {
+      // Column may already exist or DB offline
+    }
+
     const selectors = await prisma.eventSelector.findMany({
-      where: { eventId },
-      include: { user: true },
+      where: { eventId, isActive: true },
+      include: {
+        user: true,
+        assignments: {
+          include: {
+            evaluation: true,
+          },
+        },
+      },
       orderBy: { addedAt: "desc" },
     });
 
-    return NextResponse.json({ selectors });
+    // Retrieve target quotas for all selectors in this event
+    const targetMap = new Map<number, number>();
+    try {
+      const rows = await prisma.$queryRawUnsafe<
+        Array<{ id: number; target_candidates: number | null }>
+      >(
+        `SELECT id, target_candidates FROM event_selectors WHERE event_id = $1`,
+        eventId,
+      );
+      for (const row of rows) {
+        if (row.target_candidates != null) {
+          targetMap.set(row.id, row.target_candidates);
+        }
+      }
+    } catch {
+      // Ignore if table query is unsupported
+    }
+
+    const formattedSelectors = selectors.map((s) => {
+      const reviewedCount = s.assignments.filter(
+        (a) => a.evaluation && a.evaluation.decision !== null,
+      ).length;
+
+      const assignedCount =
+        targetMap.get(s.id) ??
+        (s.assignments.length > 0 ? s.assignments.length : 20);
+
+      const { assignments: _assignments, ...rest } = s;
+      return {
+        ...rest,
+        reviewedCount,
+        assignedCount,
+      };
+    });
+
+    return NextResponse.json({ selectors: formattedSelectors });
   } catch (err: unknown) {
     console.error(`GET /api/events/${rawId}/selectors failed:`, err);
     const message =
@@ -157,6 +208,13 @@ export async function POST(
       );
     }
 
+    const targetCandidates =
+      typeof data.targetCandidates === "number" && data.targetCandidates > 0
+        ? Math.floor(data.targetCandidates)
+        : typeof data.targetCandidates === "string" && parseInt(data.targetCandidates, 10) > 0
+        ? parseInt(data.targetCandidates, 10)
+        : 20;
+
     const selector = await prisma.eventSelector.create({
       data: {
         eventId,
@@ -168,7 +226,29 @@ export async function POST(
       include: { user: true },
     });
 
-    return NextResponse.json({ selector }, { status: 201 });
+    try {
+      await prisma.$executeRawUnsafe(
+        `ALTER TABLE event_selectors ADD COLUMN IF NOT EXISTS target_candidates INTEGER DEFAULT 20`,
+      );
+      await prisma.$executeRawUnsafe(
+        `UPDATE event_selectors SET target_candidates = $1 WHERE id = $2`,
+        targetCandidates,
+        selector.id,
+      );
+    } catch (rawErr) {
+      console.warn("Could not set target_candidates on event_selectors:", rawErr);
+    }
+
+    return NextResponse.json(
+      {
+        selector: {
+          ...selector,
+          reviewedCount: 0,
+          assignedCount: targetCandidates,
+        },
+      },
+      { status: 201 },
+    );
   } catch (err: unknown) {
     console.error(`POST /api/events/${eventId}/selectors failed:`, err);
     const message =

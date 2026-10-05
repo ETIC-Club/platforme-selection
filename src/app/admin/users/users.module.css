@@ -663,7 +663,7 @@
 }
 
 .tableWrapper th:nth-child(2) {
-  width: 21%;
+  width: 30%;
 }
 
 .tableWrapper th:nth-child(3) {
@@ -671,11 +671,11 @@
 }
 
 .tableWrapper th:nth-child(4) {
-  width: 19%;
+  width: 11%;
 }
 
 .tableWrapper th:nth-child(5) {
-  width: 13%;
+  width: 12%;
 }
 
 .tableWrapper th:nth-child(6) {
@@ -800,22 +800,23 @@
   vertical-align: middle;
 }
 
-.selectorRole {
-  background: #f8e7b9;
-
-  color: #6e5b2e;
+.selectorRole,
+.rhRole {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid rgba(22, 163, 74, 0.2);
 }
 
 .devRole {
-  background: #d1fae5;
-
-  color: #065f46;
+  background: #e0f2fe;
+  color: #0284c7;
+  border: 1px solid rgba(2, 132, 199, 0.2);
 }
 
 .adminRole {
-  background: #e0e7ff;
-
-  color: #3730a3;
+  background: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid rgba(126, 34, 206, 0.2);
 }
 
 
@@ -1474,6 +1475,10 @@
   text-overflow: ellipsis;
 }
 
+.detailsItemFull {
+  grid-column: 1 / -1;
+}
+
 .detailsActionsRow {
   display: flex;
   gap: 12px;
@@ -1482,13 +1487,17 @@
 }
 
 .detailsEditButton {
-  flex: 1;
-  height: 42px;
+  width: 100%;
+  height: 44px;
 
-  margin-top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 20px;
 
   border: 0;
-  border-radius: 9px;
+  border-radius: 10px;
 
   background: linear-gradient(
     135deg,
@@ -1500,10 +1509,11 @@
 
   font-family: "Gotham", Arial, sans-serif;
 
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
 
   cursor: pointer;
+  box-sizing: border-box;
 
   transition:
     opacity 0.15s ease,
