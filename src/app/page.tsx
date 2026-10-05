@@ -3,12 +3,15 @@
 import React, { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { EventCard, EventItem } from "@/components/EventCard";
+import { AddEventModal } from "@/components/AddEventModal";
 import { PlusIcon } from "@/components/Icons";
 import styles from "@/components/dashboard.module.css";
 
 export default function OutsideAnEventPage() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -33,7 +36,7 @@ export default function OutsideAnEventPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [refreshKey]);
 
   return (
     <DashboardLayout>
@@ -58,7 +61,8 @@ export default function OutsideAnEventPage() {
                 <button
                   type="button"
                   className={styles.addEventBtn}
-                  onClick={() => alert("Ajout d'événement (Bientôt disponible)")}
+                  onClick={() => setShowAddModal(true)}
+                  aria-label="Créer un nouvel événement"
                 >
                   <PlusIcon />
                   <span>ADD EVENT</span>
@@ -111,6 +115,13 @@ export default function OutsideAnEventPage() {
                   <EventCard key={ev.id} event={ev} />
                 ))}
               </div>
+            )}
+
+            {showAddModal && (
+              <AddEventModal
+                onClose={() => setShowAddModal(false)}
+                onEventCreated={() => setRefreshKey((k) => k + 1)}
+              />
             )}
           </div>
         );

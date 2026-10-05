@@ -4,10 +4,12 @@ import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { CandidateStoriesModal } from "@/components/CandidateStoriesModal";
+import { CsvImportModal } from "@/components/CsvImportModal";
 import { ArrowLeftIcon } from "@/components/Icons";
 import { CandidateDetail } from "@/services/candidateService";
 import { useAuth } from "@/context/AuthContext";
 import styles from "@/components/dashboard.module.css";
+import selStyles from "@/app/selectors/selectors.module.css";
 
 interface CandidaturesPageProps {
   params: Promise<{ id: string }>;
@@ -26,13 +28,10 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
   const [filter, setFilter] = useState<FilterType>("all");
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateDetail | null>(null);
   const [eventName, setEventName] = useState<string>(`Event #${eventId}`);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    if (isAdmin) {
-      setLoading(false);
-      return;
-    }
-
     let isMounted = true;
     async function loadCandidates() {
       try {
@@ -56,7 +55,7 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
     return () => {
       isMounted = false;
     };
-  }, [eventId]);
+  }, [eventId, refreshKey]);
 
   const handleEvaluate = async (
     candidateId: number,
@@ -114,9 +113,6 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
   return (
     <DashboardLayout eventContext={{ id: eventId, name: eventName }}>
       {({ searchQuery, role }) => {
-        if (role === "SUPER_ADMIN" || isAdmin) {
-          return <div className={styles.mainCard} />;
-        }
 
         const currentSelectorType = role === "SELECTOR_RH" ? "RH" : "Technique";
         const currentSelectorName =
@@ -168,6 +164,17 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
                   Consultez les stories des candidats et soumettez vos évaluations.
                 </p>
               </div>
+
+              {isAdmin && (
+                <button
+                  type="button"
+                  className={selStyles.addButton}
+                  onClick={() => setShowImportModal(true)}
+                  aria-label="Importer des candidats via CSV"
+                >
+                  📥 IMPORT CSV
+                </button>
+              )}
 
               <div className={styles.filterPillsRow}>
                 <button
@@ -303,6 +310,15 @@ export default function CandidaturesPage({ params }: CandidaturesPageProps) {
                 userRole={role}
                 currentSelectorType={currentSelectorType}
                 currentSelectorName={currentSelectorName}
+              />
+            )}
+
+            {showImportModal && (
+              <CsvImportModal
+                eventId={eventId}
+                userRole={user?.role ?? ""}
+                onClose={() => setShowImportModal(false)}
+                onImportComplete={() => setRefreshKey((k) => k + 1)}
               />
             )}
           </div>
