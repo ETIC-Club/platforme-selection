@@ -14,7 +14,9 @@ import {
   ClipboardIcon,
   FolderIcon,
   UserSingleIcon,
+  LockIcon,
 } from "./Icons";
+import { CloseEventModal } from "./CloseEventModal";
 import styles from "./dashboard.module.css";
 import { ASSETS } from "@/lib/theme";
 import { useAuth } from "@/context/AuthContext";
@@ -32,6 +34,7 @@ interface SidebarProps {
 export function Sidebar({ isSuperAdmin, eventContext }: SidebarProps) {
   const pathname = usePathname();
   const [isCandidatureOpen, setIsCandidatureOpen] = useState(true);
+  const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
 
   // Navigation items when outside an event
   const globalNavItems = [
@@ -218,8 +221,41 @@ export function Sidebar({ isSuperAdmin, eventContext }: SidebarProps) {
               <span style={{ color: "#C1333F", fontWeight: 700 }}>LOGOUT</span>
             </button>
           </li>
+
+          {eventContext && isSuperAdmin && (
+            <li style={{ marginTop: "6px" }}>
+              <button
+                type="button"
+                onClick={() => setIsCloseModalOpen(true)}
+                className={styles.navItem}
+                style={{
+                  width: "100%",
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  fontFamily: "inherit",
+                  fontSize: "inherit",
+                  color: "#D97706",
+                  fontWeight: 700,
+                }}
+              >
+                <LockIcon style={{ color: "#D97706" }} />
+                <span style={{ color: "#D97706", fontWeight: 700 }}>CLOSE EVENT</span>
+              </button>
+            </li>
+          )}
         </ul>
       </div>
+
+      {eventContext && (
+        <CloseEventModal
+          isOpen={isCloseModalOpen}
+          onClose={() => setIsCloseModalOpen(false)}
+          eventId={eventContext.id}
+          eventName={eventContext.name}
+        />
+      )}
     </aside>
   );
 }
