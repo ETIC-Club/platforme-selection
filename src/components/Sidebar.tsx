@@ -12,6 +12,8 @@ import {
   LogoutIcon,
   ArrowLeftIcon,
   ClipboardIcon,
+  FolderIcon,
+  UserSingleIcon,
 } from "./Icons";
 import styles from "./dashboard.module.css";
 import { ASSETS } from "@/lib/theme";
@@ -63,27 +65,27 @@ export function Sidebar({ isSuperAdmin, eventContext }: SidebarProps) {
     },
   ];
 
-  // Navigation items when inside an event (matching Figma node 183:413, 108:58, 116:64, 119:489)
+  // Navigation items when inside an event (matching Figma node 183:413)
   const eventId = eventContext?.id ?? 1;
   const eventNavItems = [
     {
       name: "Dashboard",
       href: `/events/${eventId}`,
-      icon: CalendarIcon,
+      icon: FolderIcon,
       active: pathname === `/events/${eventId}`,
       rolesAllowed: "all" as const,
     },
     {
-      name: "Selectors",
+      name: "Sélecteur",
       href: `/events/${eventId}/selectors`,
       icon: UsersIcon,
       active: pathname === `/events/${eventId}/selectors`,
       rolesAllowed: "admin_only" as const,
     },
     {
-      name: "Condidature",
+      name: "Candidature",
       href: `/events/${eventId}/candidatures`,
-      icon: UsersIcon,
+      icon: UserSingleIcon,
       active: pathname.includes(`/events/${eventId}/candidatures`),
       rolesAllowed: "all" as const,
       subItems: isSuperAdmin ? [
@@ -208,10 +210,12 @@ export function Sidebar({ isSuperAdmin, eventContext }: SidebarProps) {
                 textAlign: "left",
                 fontFamily: "inherit",
                 fontSize: "inherit",
+                color: "#C1333F",
+                fontWeight: 700,
               }}
             >
-              <LogoutIcon />
-              <span>LOGOUT</span>
+              <LogoutIcon style={{ color: "#C1333F" }} />
+              <span style={{ color: "#C1333F", fontWeight: 700 }}>LOGOUT</span>
             </button>
           </li>
         </ul>

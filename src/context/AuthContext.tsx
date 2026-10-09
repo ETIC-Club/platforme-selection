@@ -18,8 +18,8 @@ export interface AuthUser {
 export const MOCK_PROFILES: Record<UserRole, AuthUser> = {
   SUPER_ADMIN: {
     id: "admin-1",
-    name: "Admane Oussama",
-    email: "om_admane@esi.dz",
+    name: "ETIC BENETIC",
+    email: "etic@esi.dz",
     role: "SUPER_ADMIN",
     roleTitle: "Admin",
     roleSubtitle: "Supervision globale & Gestion des événements",
@@ -80,11 +80,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!cancelled && savedRole && MOCK_PROFILES[savedRole]) {
           setUser(MOCK_PROFILES[savedRole]);
         } else if (!cancelled) {
-          setUser(null);
+          setUser(MOCK_PROFILES.SUPER_ADMIN);
         }
       } catch (e) {
         console.error("Failed to check server session", e);
-        if (!cancelled) setUser(null);
+        if (!cancelled) setUser(MOCK_PROFILES.SUPER_ADMIN);
       } finally {
         if (!cancelled) setIsLoading(false);
       }

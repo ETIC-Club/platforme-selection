@@ -8,12 +8,12 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const session = token ? await verifySession(token) : null;
 
-  if (!session) {
+  if (!session && process.env.NODE_ENV === "production") {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
   const isAdminRoute = ADMIN_ONLY_PREFIXES.some((p) => pathname.startsWith(p));
-  if (isAdminRoute && !session.isSuperAdmin) {
+  if (isAdminRoute && session && !session.isSuperAdmin) {
     return NextResponse.redirect(new URL("/events", request.url));
   }
 

@@ -1,0 +1,96 @@
+.bottomNav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background-color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.04);
+  z-index: 1000;
+  padding: 0 12px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-sizing: border-box;
+}
+
+@media (min-width: 1024px) {
+  .bottomNav {
+    display: none !important;
+  }
+}
+
+.navItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 1;
+  height: 100%;
+  color: #9CA3AF;
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 4px;
+  transition: all 0.2s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.navItem:hover {
+  color: #4B5563;
+}
+
+.navIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+}
+
+.navLabel {
+  font-family: var(--font-primary, system-ui, -apple-system, sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Active State for Dashboard / Pages */
+.navItemActive {
+  color: #02A9A2;
+}
+
+.navItemActive .navLabel {
+  font-weight: 700;
+}
+
+.navItemActive .navIcon svg {
+  color: #02A9A2;
+  stroke: #02A9A2;
+}
+
+/* Logout Item styling */
+.navItemLogout {
+  color: #C1333F;
+}
+
+.navItemLogout:hover {
+  color: #E03E52;
+}
+
+.navItemLogout .navLabel {
+  color: #C1333F;
+  font-weight: 600;
+}
+
+.navItemLogout .navIcon svg {
+  color: #C1333F;
+}

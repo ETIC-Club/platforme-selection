@@ -1,8 +1,10 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { SearchIcon, BellIcon } from "./Icons";
+import { SearchIcon, BellIcon, FilterSlidersIcon } from "./Icons";
+import { ASSETS } from "@/lib/theme";
 import styles from "./dashboard.module.css";
 
 export type RolePreview = "SUPER_ADMIN" | "SELECTOR_RH" | "SELECTOR_TECHNIQUE" | "STANDARD_USER";
@@ -20,8 +22,8 @@ export function TopBar({
   currentRole,
   searchQuery,
   onSearchChange,
-  userName = "Admin ETIC",
-  userEmail = "admin@etic-club.net",
+  userName = "ETIC BENETIC",
+  userEmail = "etic@esi.dz",
 }: TopBarProps) {
   const getInitials = (name: string) => {
     return name
@@ -47,38 +49,86 @@ export function TopBar({
 
   return (
     <header className={styles.topbar}>
-      <div className={styles.searchContainer}>
-        <SearchIcon className={styles.searchIcon} />
-        <input
-          type="text"
-          placeholder="Search events, candidates, or tags..."
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className={styles.searchInput}
-        />
+      {/* Desktop TopBar */}
+      <div className={styles.desktopTopBar}>
+        <div className={styles.searchContainer}>
+          <SearchIcon className={styles.searchIcon} />
+          <input
+            type="text"
+            placeholder="Search"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className={styles.searchInput}
+          />
+        </div>
+
+        <div className={styles.topbarActions}>
+          <button
+            type="button"
+            aria-label="Notifications"
+            className={styles.iconButton}
+          >
+            <BellIcon />
+          </button>
+
+          <Link href="/login" className={styles.profileSection} title="Cliquer pour changer de rôle">
+            <div className={styles.avatar}>
+              {getInitials(userName)}
+            </div>
+            <div className={styles.profileMeta}>
+              <span className={styles.profileName}>{userName}</span>
+              <span className={styles.profileRoleBadge}>
+                {userEmail}
+              </span>
+            </div>
+          </Link>
+        </div>
       </div>
 
-      <div className={styles.topbarActions}>
-        <button
-          type="button"
-          aria-label="Notifications"
-          className={styles.iconButton}
-        >
-          <BellIcon />
-        </button>
+      {/* Mobile TopBar (Image 2) */}
+      <div className={styles.mobileTopBar}>
+        <div className={styles.mobileHeaderRow}>
+          <div className={styles.mobileBrand}>
+            <Image
+              src={ASSETS.logo}
+              alt="ETIC Logo"
+              width={34}
+              height={30}
+              style={{ objectFit: "contain" }}
+            />
+            <div className={styles.mobileBrandText}>
+              <span className={styles.mobileBrandTitle}>PLATFORM</span>
+              <span className={styles.mobileBrandSub}>SELECTION</span>
+            </div>
+          </div>
 
-        <Link href="/login" className={styles.profileSection} title="Cliquer pour changer de rôle">
-          <div className={styles.avatar}>
-            {getInitials(userName)}
+          <div className={styles.mobileActions}>
+            <button
+              type="button"
+              aria-label="Notifications"
+              className={styles.mobileIconButton}
+            >
+              <BellIcon width={18} height={18} />
+            </button>
+            <div className={styles.mobileAvatar}>
+              {getInitials(userName)}
+            </div>
           </div>
-          <div className={styles.profileMeta}>
-            <span className={styles.profileName}>{userName}</span>
-            <span className={styles.profileRoleBadge}>
-              {userEmail} • {getRoleDisplayName(currentRole)}
-            </span>
-          </div>
-        </Link>
+        </div>
+
+        <div className={styles.mobileSearchContainer}>
+          <SearchIcon className={styles.searchIcon} width={16} height={16} />
+          <input
+            type="text"
+            placeholder="Search events"
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className={styles.mobileSearchInput}
+          />
+          <FilterSlidersIcon className={styles.mobileFilterIcon} width={16} height={16} />
+        </div>
       </div>
     </header>
   );
 }
+

@@ -38,6 +38,16 @@ body {
   overflow: hidden;
 }
 
+@media (max-width: 1023px) {
+  html,
+  body {
+    height: auto;
+    min-height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+}
+
 body {
   height: 100vh;
   display: flex;

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar, EventContext } from "./Sidebar";
 import { TopBar, RolePreview } from "./TopBar";
+import { BottomNav } from "./BottomNav";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./dashboard.module.css";
 
@@ -74,6 +75,8 @@ export function DashboardLayout({ eventContext, children }: DashboardLayoutProps
           {children({ searchQuery, role: activeRole })}
         </main>
       </div>
+
+      <BottomNav eventId={eventContext?.id} />
     </div>
   );
 }
