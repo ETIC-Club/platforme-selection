@@ -69,6 +69,7 @@ export function DashboardLayout({ eventContext, children }: DashboardLayoutProps
           onSearchChange={setSearchQuery}
           userName={user.name}
           userEmail={user.email}
+          eventContext={eventContext}
         />
 
         <main className={styles.mainContainer}>

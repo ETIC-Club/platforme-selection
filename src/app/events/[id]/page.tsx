@@ -10,6 +10,7 @@ import {
   ClockIcon,
   CalendarIcon,
   BarChartIcon,
+  ArrowLeftIcon,
 } from "@/components/Icons";
 import { useAuth } from "@/context/AuthContext";
 import { SelectorDashboardView } from "@/components/SelectorDashboardView";

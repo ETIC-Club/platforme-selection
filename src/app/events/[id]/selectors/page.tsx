@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, use } from "react";
+import Link from "next/link";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { AddSelectorModal } from "@/components/AddSelectorModal";
-import { PlusIcon } from "@/components/Icons";
+import { PlusIcon, ArrowLeftIcon } from "@/components/Icons";
 import { useAuth } from "@/context/AuthContext";
 import styles from "@/components/dashboard.module.css";
 import selStyles from "@/app/selectors/selectors.module.css";
@@ -154,6 +155,26 @@ export default function SelectorsPage({ params }: SelectorsPageProps) {
                 <div className={selStyles.emptySubtitle}>
                   Seuls les administrateurs peuvent gérer les sélecteurs.
                 </div>
+                <Link
+                  href="/"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    marginTop: "16px",
+                    padding: "9px 18px",
+                    backgroundColor: "var(--color-primary-teal, #009688)",
+                    color: "#FFFFFF",
+                    borderRadius: "9999px",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    boxShadow: "0 2px 6px rgba(0, 150, 136, 0.25)",
+                  }}
+                >
+                  <ArrowLeftIcon width={14} height={14} />
+                  <span>Retour aux événements</span>
+                </Link>
               </div>
             </div>
           );
@@ -235,7 +256,8 @@ export default function SelectorsPage({ params }: SelectorsPageProps) {
                 </div>
               </div>
             ) : (
-              <div className={tableStyles.tableWrapper}>
+              <>
+                <div className={tableStyles.tableWrapper}>
                 <table className={tableStyles.table}>
                   <thead className={tableStyles.thead}>
                     <tr>
@@ -340,7 +362,83 @@ export default function SelectorsPage({ params }: SelectorsPageProps) {
                   </tbody>
                 </table>
               </div>
-            )}
+
+              {/* Mobile Card View (Replaces horizontal table scroll on phones) */}
+              <div className={tableStyles.mobileSelectorsList}>
+                {filtered.map((sel) => {
+                  const reviewed = sel.reviewedCount ?? 0;
+                  const assigned = sel.assignedCount ?? 20;
+                  const pct = Math.min(
+                    100,
+                    Math.round((reviewed / Math.max(1, assigned)) * 100)
+                  );
+
+                  return (
+                    <div key={sel.id} className={tableStyles.mobileSelectorCard}>
+                      <div className={tableStyles.mobileCardHeader}>
+                        <div className={tableStyles.mobileProfile}>
+                          <div className={tableStyles.avatar}>
+                            {getInitials(sel.user.fullName, sel.user.email)}
+                          </div>
+                          <div className={tableStyles.mobileInfo}>
+                            <span className={tableStyles.name}>
+                              {sel.user.fullName || sel.user.email}
+                            </span>
+                            <span className={tableStyles.email}>{sel.user.email}</span>
+                          </div>
+                        </div>
+
+                        <div className={tableStyles.mobileBadges}>
+                          <span
+                            className={
+                              sel.selectorType === "RH"
+                                ? tableStyles.roleBadgeRh
+                                : tableStyles.roleBadgeDev
+                            }
+                          >
+                            {sel.selectorType === "RH" ? "RH" : "DEV"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className={tableStyles.mobileProgressSection}>
+                        <div className={tableStyles.mobileProgressHeader}>
+                          <span className={tableStyles.mobileProgressLabel}>
+                            Candidats évalués
+                          </span>
+                          <span className={tableStyles.reviewedNumber}>
+                            {reviewed} / {assigned}
+                          </span>
+                        </div>
+                        <div className={tableStyles.progressBarTrack}>
+                          <div
+                            className={`${tableStyles.progressBarFill} ${
+                              reviewed >= assigned && assigned > 0
+                                ? tableStyles.progressBarFillComplete
+                                : ""
+                            }`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className={tableStyles.mobileCardFooter}>
+                        <span className={tableStyles.statusActive}>Actif</span>
+                        <button
+                          type="button"
+                          className={tableStyles.omitButton}
+                          onClick={() => setOmittingSelector(sel)}
+                          title="Omettre ce sélecteur de l'événement"
+                        >
+                          Omettre
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
 
             {/* In-app Omit Confirmation Modal */}
             {omittingSelector && (

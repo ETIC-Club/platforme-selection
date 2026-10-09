@@ -9,6 +9,7 @@ import {
   TrendingUpIcon,
   CalendarIcon,
   ChevronRightIcon,
+  ArrowLeftIcon,
 } from "./Icons";
 import styles from "@/app/events/[id]/selectorDashboard.module.css";
 
@@ -66,7 +67,9 @@ export function SelectorDashboardView({
     <div className={styles.dashboardContainer}>
       {/* Header with Event Title */}
       <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>{eventName}</h1>
+        <div className={styles.pageHeaderLeft}>
+          <h1 className={styles.pageTitle}>{eventName}</h1>
+        </div>
       </div>
 
       {/* 4 Stat Cards */}

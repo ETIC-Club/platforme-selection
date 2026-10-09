@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { SearchIcon, BellIcon, FilterSlidersIcon } from "./Icons";
+import { SearchIcon, BellIcon, FilterSlidersIcon, ArrowLeftIcon } from "./Icons";
 import { ASSETS } from "@/lib/theme";
 import styles from "./dashboard.module.css";
 
@@ -16,6 +16,7 @@ interface TopBarProps {
   onSearchChange: (query: string) => void;
   userName?: string;
   userEmail?: string;
+  eventContext?: { id: number; name: string } | null;
 }
 
 export function TopBar({
@@ -24,6 +25,7 @@ export function TopBar({
   onSearchChange,
   userName = "ETIC BENETIC",
   userEmail = "etic@esi.dz",
+  eventContext,
 }: TopBarProps) {
   const getInitials = (name: string) => {
     return name
@@ -139,6 +141,15 @@ export function TopBar({
             </div>
           </div>
         </div>
+
+        {eventContext && (
+          <div className={styles.mobileEventRow}>
+            <Link href="/" className={styles.mobileBackBtn}>
+              <ArrowLeftIcon width={16} height={16} />
+              <span>Retour aux événements</span>
+            </Link>
+          </div>
+        )}
 
         <div className={styles.mobileSearchContainer}>
           <SearchIcon className={styles.searchIcon} width={16} height={16} />

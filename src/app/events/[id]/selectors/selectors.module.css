@@ -467,3 +467,108 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* ==========================================================================
+   MOBILE SELECTORS LIST (CARD VIEW)
+   ========================================================================== */
+
+.mobileSelectorsList {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .tableWrapper {
+    display: none !important;
+  }
+
+  .mobileSelectorsList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .mobileSelectorCard {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  }
+
+  .mobileCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .mobileProfile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .mobileInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .mobileInfo .name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    overflow-wrap: anywhere;
+  }
+
+  .mobileInfo .email {
+    font-size: 12px;
+    color: #6b7280;
+    overflow-wrap: anywhere;
+  }
+
+  .mobileBadges {
+    flex-shrink: 0;
+  }
+
+  .mobileProgressSection {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #f9fafb;
+    padding: 10px 12px;
+    border-radius: 8px;
+  }
+
+  .mobileProgressHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .mobileProgressLabel {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .mobileCardFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 4px;
+  }
+
+  .mobileCardFooter .omitButton {
+    padding: 6px 14px;
+  }
+}

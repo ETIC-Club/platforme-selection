@@ -23,7 +23,26 @@
 .headerLeft {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
+}
+
+.backLinkTop {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-primary, system-ui, -apple-system, sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary-teal, #009688);
+  text-decoration: none;
+  width: fit-content;
+  margin-bottom: 2px;
+  transition: opacity 0.2s ease;
+}
+
+.backLinkTop:hover {
+  text-decoration: underline;
+  opacity: 0.85;
 }
 
 .breadcrumb {

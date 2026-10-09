@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -9,6 +10,7 @@ import {
   ClockIcon,
   MessageSquareIcon,
   QuoteIcon,
+  ArrowLeftIcon,
 } from "./Icons";
 import { CandidateDetail } from "@/services/candidateService";
 import { useAuth } from "@/context/AuthContext";

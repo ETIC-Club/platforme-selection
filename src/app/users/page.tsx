@@ -365,6 +365,78 @@ export default function UsersPage() {
               </table>
             </div>
 
+            {/* MOBILE CARDS VIEW */}
+            <div className={styles.mobileUsersList}>
+              {paginatedUsers.length > 0 ? (
+                paginatedUsers.map((user) => (
+                  <div key={user.id} className={styles.mobileUserCard}>
+                    <div className={styles.mobileUserCardHeader}>
+                      <div className={styles.mobileUserCardInfo}>
+                        <span className={styles.mobileUserName}>{user.name}</span>
+                        <span className={styles.mobileUserEmail}>{user.email}</span>
+                      </div>
+
+                      <div className={styles.mobileUserCardRight}>
+                        <span className={`${styles.role} ${getRoleBadgeClass(user)}`}>
+                          {user.role}
+                        </span>
+
+                        <div className={styles.actionMenuWrapper}>
+                          <button
+                            type="button"
+                            className={styles.moreButton}
+                            aria-label={`Actions for ${user.name}`}
+                            onClick={() =>
+                              setOpenMenuId(openMenuId === user.id ? null : user.id)
+                            }
+                          >
+                            •••
+                          </button>
+
+                          {openMenuId === user.id && (
+                            <div className={styles.actionMenu}>
+                              <button
+                                type="button"
+                                onClick={() => handleViewDetails(user)}
+                              >
+                                Details
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleEditUser(user)}
+                              >
+                                Edit
+                              </button>
+
+                              <button
+                                type="button"
+                                className={styles.deleteAction}
+                                onClick={() => handleDeleteUser(user)}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className={styles.mobileUserMetaRow}>
+                      <span className={styles.mobileUserMetaPill}>
+                        <strong>{user.events}</strong> events
+                      </span>
+                      <span className={styles.mobileUserMetaPill}>
+                        <strong>{user.candidates}</strong> candidates
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className={styles.mobileNoUsers}>No users found.</div>
+              )}
+            </div>
+
             {/* PAGINATION */}
             <footer className={styles.pagination}>
               <div className={styles.pageSize}>

@@ -1600,3 +1600,117 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================
+   MOBILE USERS LIST (CARD VIEW)
+   ========================= */
+
+.mobileUsersList {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .tableWrapper {
+    display: none !important;
+  }
+
+  .mobileUsersList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .mobileUserCard {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  }
+
+  .mobileUserCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .mobileUserCardInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .mobileUserName {
+    font-size: 15px;
+    font-weight: 700;
+    color: #24242a;
+    word-break: break-word;
+  }
+
+  .mobileUserEmail {
+    font-size: 12px;
+    color: #7e8088;
+    word-break: break-all;
+  }
+
+  .mobileUserCardRight {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .mobileUserMetaRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f3;
+  }
+
+  .mobileUserMetaPill {
+    font-size: 11px;
+    color: #55555c;
+    background: #f4f5f7;
+    padding: 5px 10px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .mobileUserMetaPill strong {
+    color: var(--color-primary-teal, #02a9a2);
+    font-weight: 700;
+  }
+
+  .mobileNoUsers {
+    padding: 30px;
+    text-align: center;
+    color: #8e8e96;
+    font-size: 14px;
+  }
+
+  .filters {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .filters button {
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+
+  .mainContent {
+    padding: 18px 14px;
+  }
+}

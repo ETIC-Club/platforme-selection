@@ -168,6 +168,43 @@ const loadUsers = async () => {
               </table>
             </div>
 
+            {/* MOBILE CARDS VIEW */}
+            <div className={styles.mobileUsersList}>
+              {users.length > 0 ? (
+                users.map((user) => (
+                  <div key={user.id} className={styles.mobileUserCard}>
+                    <div className={styles.mobileUserCardHeader}>
+                      <div className={styles.mobileUserCardInfo}>
+                        <span className={styles.mobileUserName}>{user.name}</span>
+                        <span className={styles.mobileUserEmail}>{user.email}</span>
+                      </div>
+                      <div className={styles.mobileUserCardRight}>
+                        <span
+                          className={`${styles.role} ${
+                            user.roleType === "dev"
+                              ? styles.devRole
+                              : styles.selectorRole
+                          }`}
+                        >
+                          {user.role}
+                        </span>
+                      </div>
+                    </div>
+                    <div className={styles.mobileUserMetaRow}>
+                      <span className={styles.mobileUserMetaPill}>
+                        <strong>{user.events}</strong> events
+                      </span>
+                      <span className={styles.mobileUserMetaPill}>
+                        <strong>{user.candidates}</strong> candidates
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className={styles.mobileNoUsers}>No users found.</div>
+              )}
+            </div>
+
             <footer className={styles.pagination}>
               <div className={styles.pageSize}>
                 <span>10</span>
