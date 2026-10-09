@@ -63,6 +63,30 @@ export function TopBar({
         </div>
 
         <div className={styles.topbarActions}>
+          <div className={styles.roleSelector}>
+            <label htmlFor="role-select" style={{ fontSize: "11px", color: "#6B7280" }}>
+              Rôle:
+            </label>
+            <select
+              id="role-select"
+              value={currentRole}
+              onChange={(e) => {
+                const newRole = e.target.value as "SUPER_ADMIN" | "SELECTOR_RH" | "SELECTOR_TECHNIQUE";
+                if (typeof window !== "undefined") {
+                  try {
+                    localStorage.setItem("etic_platform_role", newRole);
+                    window.location.reload();
+                  } catch {}
+                }
+              }}
+              className={styles.roleSelectDropdown}
+            >
+              <option value="SUPER_ADMIN">Admin</option>
+              <option value="SELECTOR_TECHNIQUE">Sélecteur Dev</option>
+              <option value="SELECTOR_RH">Sélecteur RH</option>
+            </select>
+          </div>
+
           <button
             type="button"
             aria-label="Notifications"

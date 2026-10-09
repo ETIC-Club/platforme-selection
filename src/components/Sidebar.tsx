@@ -83,7 +83,7 @@ export function Sidebar({ isSuperAdmin, eventContext }: SidebarProps) {
       rolesAllowed: "admin_only" as const,
     },
     {
-      name: "Candidature",
+      name: isSuperAdmin ? "Candidature" : "Mes candidatures",
       href: `/events/${eventId}/candidatures`,
       icon: UserSingleIcon,
       active: pathname.includes(`/events/${eventId}/candidatures`),
