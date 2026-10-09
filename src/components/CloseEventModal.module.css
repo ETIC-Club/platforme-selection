@@ -222,20 +222,47 @@
   word-break: break-all;
 }
 
+.successActions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
 .finishBtn {
   width: 100%;
   padding: 12px 20px;
   border-radius: 9999px;
   border: none;
-  background: #02a9a2;
+  background: linear-gradient(135deg, #02a9a2 0%, #0d9488 100%);
   color: #ffffff;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  margin-top: 6px;
-  transition: opacity 0.2s ease;
+  box-shadow: 0 4px 12px rgba(2, 169, 162, 0.25);
+  transition: all 0.2s ease;
 }
 
 .finishBtn:hover {
-  opacity: 0.9;
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.secondaryBtn {
+  width: 100%;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.secondaryBtn:hover {
+  background-color: #f3f4f6;
+  color: #111827;
 }

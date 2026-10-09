@@ -82,9 +82,8 @@ export function CloseEventModal({
     setIsSuccess(false);
     setError(null);
     onClose();
-    // Optional refresh
     if (typeof window !== "undefined") {
-      window.location.reload();
+      window.location.href = "/history";
     }
   };
 
@@ -163,16 +162,23 @@ export function CloseEventModal({
             <h2 className={styles.title}>Événement clôturé avec succès !</h2>
 
             <p className={styles.description}>
-              Le fichier CSV des candidats acceptés a été exporté et téléchargé sur
-              votre appareil.
+              L&apos;événement a été clôturé et transféré dans la colonne de
+              l&apos;<strong>Historique</strong>. Le fichier CSV contenant
+              exclusivement les candidats acceptés a été téléchargé.
             </p>
 
             {exportStats && (
               <div className={styles.statsCard}>
                 <div className={styles.statItem}>
-                  <span className={styles.statLabel}>Candidats exportés</span>
+                  <span className={styles.statLabel}>Candidats admis exportés</span>
                   <span className={styles.statValue}>
                     {exportStats.acceptedCount}
+                  </span>
+                </div>
+                <div className={styles.statItem}>
+                  <span className={styles.statLabel}>Nouveau statut</span>
+                  <span className={styles.statValue} style={{ color: "#d97706" }}>
+                    Clôturé (Historique)
                   </span>
                 </div>
                 <div className={styles.statItem}>
@@ -184,13 +190,27 @@ export function CloseEventModal({
               </div>
             )}
 
-            <button
-              type="button"
-              className={styles.finishBtn}
-              onClick={handleFinish}
-            >
-              Terminer
-            </button>
+            <div className={styles.successActions}>
+              <button
+                type="button"
+                className={styles.finishBtn}
+                onClick={handleFinish}
+              >
+                Voir dans l&apos;Historique →
+              </button>
+              <button
+                type="button"
+                className={styles.secondaryBtn}
+                onClick={() => {
+                  onClose();
+                  if (typeof window !== "undefined") {
+                    window.location.href = "/";
+                  }
+                }}
+              >
+                Retour aux Événements
+              </button>
+            </div>
           </div>
         )}
       </div>

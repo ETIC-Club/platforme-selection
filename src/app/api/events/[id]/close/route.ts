@@ -45,16 +45,14 @@ export async function POST(
     // 2. Fetch all candidates for this event
     const allCandidates: CandidateDetail[] = await getCandidatesByEvent(eventId);
 
-    // 3. Filter accepted candidates
+    // 3. Filter strictly accepted candidates only
+    // Exclude pending ('en_attente') and rejected ('refuse') candidates
+    // No fallback to all candidates: only candidates who are accepted are exported
     const acceptedCandidates = allCandidates.filter(
-      (c) =>
-        c.finalStatus === "accepte" ||
-        c.evaluations.some((e) => e.decision === "accepter")
+      (c) => c.finalStatus === "accepte"
     );
 
-    // If no candidate is marked as accepted yet, fallback to all candidates
-    const candidatesToExport =
-      acceptedCandidates.length > 0 ? acceptedCandidates : allCandidates;
+    const candidatesToExport = acceptedCandidates;
 
     // 4. Construct CSV rows with all important fields
     const headers = [
